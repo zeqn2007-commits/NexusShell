@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(dotnet --version)",
+      "Bash(dotnet --info)",
+      "Bash(dotnet restore NexusShell.sln *)",
+      "Bash(dotnet build NexusShell.sln *)",
+      "Bash(dotnet run --project tests/Nexus.Core.Tests/Nexus.Core.Tests.csproj *)",
+      "Bash(dotnet run --project tests/Nexus.RecycleBin.SmokeTests/Nexus.RecycleBin.SmokeTests.csproj *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pfx)",
+      "Read(./**/*.p12)",
+      "Read(./**/*.key)",
+      "Bash(reg add *)",
+      "Bash(reg delete *)",
+      "Bash(reg import *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fd*)"
+    ]
+  }
+}

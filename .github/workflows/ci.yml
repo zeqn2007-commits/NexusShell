@@ -1,0 +1,46 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore NexusShell.sln --configfile NuGet.Config -p:NuGetAudit=false
+
+      - name: Build Release
+        run: dotnet build NexusShell.sln -c Release --no-restore -p:NuGetAudit=false
+
+      - name: Run Core regression harness
+        run: >-
+          dotnet run
+          --project tests/Nexus.Core.Tests/Nexus.Core.Tests.csproj
+          -c Release
+          --no-build
+          --no-restore
+          -p:NuGetAudit=false
+
+      - name: Validate installer safety
+        shell: powershell
+        run: >-
+          powershell.exe -NoProfile -ExecutionPolicy Bypass
+          -File installer/build-installer.ps1
+          -Version 0.8.0
+          -ValidateOnly

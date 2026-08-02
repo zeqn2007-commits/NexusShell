@@ -1,0 +1,101 @@
+<Application
+    x:Class="Nexus.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <controls:XamlControlsResources />
+            </ResourceDictionary.MergedDictionaries>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <Color x:Key="NexusCanvasColor">#FF0C1320</Color>
+                    <Color x:Key="NexusChromeColor">#FF111827</Color>
+                    <Color x:Key="NexusSurfaceColor">#FF172133</Color>
+                    <Color x:Key="NexusRaisedColor">#FF1C2840</Color>
+                    <Color x:Key="NexusInsetColor">#FF0A101B</Color>
+                    <Color x:Key="NexusTextPrimaryColor">#FFF4F6FB</Color>
+                    <Color x:Key="NexusTextSecondaryColor">#FFC2C6D1</Color>
+                    <Color x:Key="NexusTextTertiaryColor">#FF9399A8</Color>
+                    <Color x:Key="NexusAccentColor">#FF7771F4</Color>
+                    <Color x:Key="NexusAccentPressedColor">#FF625CDD</Color>
+                    <Color x:Key="NexusSelectedColor">#FF29275E</Color>
+                    <Color x:Key="NexusBorderColor">#24FFFFFF</Color>
+                    <Color x:Key="NexusBorderStrongColor">#38FFFFFF</Color>
+                    <Color x:Key="NexusHoverColor">#12FFFFFF</Color>
+                    <Color x:Key="NexusPressedColor">#1CFFFFFF</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <SolidColorBrush x:Key="NexusCanvasBrush" Color="{ThemeResource NexusCanvasColor}" />
+            <SolidColorBrush x:Key="NexusChromeBrush" Color="{ThemeResource NexusChromeColor}" />
+            <SolidColorBrush x:Key="NexusSurfaceBrush" Color="{ThemeResource NexusSurfaceColor}" />
+            <SolidColorBrush x:Key="NexusRaisedBrush" Color="{ThemeResource NexusRaisedColor}" />
+            <SolidColorBrush x:Key="NexusInsetBrush" Color="{ThemeResource NexusInsetColor}" />
+            <SolidColorBrush x:Key="NexusTextPrimaryBrush" Color="{ThemeResource NexusTextPrimaryColor}" />
+            <SolidColorBrush x:Key="NexusTextSecondaryBrush" Color="{ThemeResource NexusTextSecondaryColor}" />
+            <SolidColorBrush x:Key="NexusTextTertiaryBrush" Color="{ThemeResource NexusTextTertiaryColor}" />
+            <SolidColorBrush x:Key="NexusAccentBrush" Color="{ThemeResource NexusAccentColor}" />
+            <SolidColorBrush x:Key="NexusAccentPressedBrush" Color="{ThemeResource NexusAccentPressedColor}" />
+            <SolidColorBrush x:Key="NexusSelectedBrush" Color="{ThemeResource NexusSelectedColor}" />
+            <SolidColorBrush x:Key="NexusBorderBrush" Color="{ThemeResource NexusBorderColor}" />
+            <SolidColorBrush x:Key="NexusBorderStrongBrush" Color="{ThemeResource NexusBorderStrongColor}" />
+            <SolidColorBrush x:Key="NexusHoverBrush" Color="{ThemeResource NexusHoverColor}" />
+            <SolidColorBrush x:Key="NexusPressedBrush" Color="{ThemeResource NexusPressedColor}" />
+
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI Variable Text" />
+                <Setter Property="Foreground" Value="{StaticResource NexusTextPrimaryBrush}" />
+            </Style>
+
+            <Style x:Key="ChromeIconButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="40" />
+                <Setter Property="Height" Value="40" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource NexusTextSecondaryBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="NavigationButtonStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="40" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource NexusTextSecondaryBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="FontSize" Value="13" />
+            </Style>
+
+            <Style x:Key="SpaceButtonStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="146" />
+                <Setter Property="Padding" Value="16" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="Background" Value="{StaticResource NexusSurfaceBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource NexusTextPrimaryBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource NexusBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="12" />
+            </Style>
+
+            <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="40" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="Background" Value="{StaticResource NexusAccentBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
