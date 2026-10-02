@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
-    <Version>0.9.0</Version>
+    <Version>2.0.0</Version>
     <Product>Nexus Shell</Product>
     <Company>Nexus Shell</Company>
     <NeutralLanguage>ru-RU</NeutralLanguage>
