@@ -4,9 +4,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Nexus.App.Models;
 using Nexus.App.Services;
 using Nexus.App.Shell;
 using Nexus.App.ViewModels;
+using Nexus.Core.Games;
 using Nexus.Core.Shell;
 using Windows.System;
 
@@ -186,6 +188,26 @@ public sealed partial class HomePage : Page, IShellPage
         _shell.Navigate(NavLocation.FromTag(FileListSelector.SelectedItem == RecentSelectorItem ? "recent" : "favorites"));
 
     private void ThisPc_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("thispc"));
+
+    private void AllGames_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("games"));
+
+    private void Game_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: GameItem { Entry: { } entry } game })
+        {
+            return;
+        }
+
+        try
+        {
+            GameLibrary.Launch(entry);
+            _shell.Notify($"«{game.Name}» запускается…");
+        }
+        catch (Exception exception) when (exception is System.ComponentModel.Win32Exception or InvalidOperationException or IOException)
+        {
+            _shell.NotifyError(exception.Message, "Игра не запустилась");
+        }
+    }
 
     private void Drive_Click(object sender, RoutedEventArgs e)
     {

@@ -40,6 +40,10 @@ public sealed class IconCache(ShellImageProvider provider)
     public Task<ImageSource?> GetThumbnailAsync(string path, DateTimeOffset modified, int size) =>
         GetAsync($"thumb|{size}|{path}|{modified.UtcTicks}", path, size, ShellImageKind.Thumbnail);
 
+    /// <summary>The icon Start shows for an app (shell:AppsFolder\…), Store tile plating included.</summary>
+    public Task<ImageSource?> GetAppIconAsync(string shellPath, int size) =>
+        GetAsync($"app|{size}|{shellPath}", shellPath, size, ShellImageKind.Icon);
+
     private static string IconKey(string path, bool isFolder, FileAttributes attributes, int size)
     {
         if (isFolder)

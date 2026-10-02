@@ -118,6 +118,7 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
             PageKind.ThisPc => typeof(ThisPcPage),
             PageKind.RecycleBin => typeof(RecycleBinPage),
             PageKind.Network => typeof(NetworkPage),
+            PageKind.Apps => typeof(AppsPage),
             PageKind.Games => typeof(GamesPage),
             PageKind.AiCenter => typeof(AiCenterPage),
             PageKind.Settings => typeof(SettingsPage),

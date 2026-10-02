@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 using Nexus.App.Models;
 using Nexus.App.Shell;
+using Nexus.Core.Games;
 using Nexus.Core.IO;
 using Nexus.Core.Settings;
 using Nexus.Core.Shell;
@@ -28,7 +29,7 @@ public sealed partial class QuickAccessItem(string title, string path, string su
     public bool HasIcon => Icon is not null;
 }
 
-public sealed partial class HomeViewModel(SettingsStore settings, RecentItems recent) : ObservableObject
+public sealed partial class HomeViewModel(SettingsStore settings, RecentItems recent, GameLibrary games) : ObservableObject
 {
     private static readonly CultureInfo Russian = CultureInfo.GetCultureInfo("ru-RU");
     private bool _showingFavorites;
@@ -36,6 +37,12 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public ObservableCollection<QuickAccessItem> QuickAccess { get; } = [];
 
     public ObservableCollection<DriveItem> Drives { get; } = [];
+
+    /// <summary>"Продолжить играть": the last games played, newest first.</summary>
+    public ObservableCollection<GameItem> RecentGames { get; } = [];
+
+    [ObservableProperty]
+    public partial bool HasRecentGames { get; private set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFileListEmpty))]
@@ -62,7 +69,7 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public async Task LoadAsync()
     {
         LoadQuickAccess();
-        await Task.WhenAll(LoadDrivesAsync(), LoadFileListAsync());
+        await Task.WhenAll(LoadDrivesAsync(), LoadFileListAsync(), LoadRecentGamesAsync());
     }
 
     public Task ShowRecentAsync()
@@ -109,6 +116,18 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
         {
             Drives.Add(DriveItem.FromEntry(drive));
         }
+    }
+
+    private async Task LoadRecentGamesAsync()
+    {
+        var library = await games.LoadAsync();
+        RecentGames.Clear();
+        foreach (var game in library.Where(game => game.LastPlayed is not null).OrderByDescending(game => game.LastPlayed).Take(4))
+        {
+            RecentGames.Add(GameItem.FromEntry(game));
+        }
+
+        HasRecentGames = RecentGames.Count > 0;
     }
 
     private async Task LoadFileListAsync()

@@ -59,11 +59,10 @@
             </TabView.TabStripFooter>
             <TabView.TabItemTemplate>
                 <DataTemplate x:DataType="shell:TabViewModel">
-                    <TabViewItem Header="{x:Bind Title, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
-                        <TabViewItem.IconSource>
-                            <FontIconSource Glyph="{x:Bind Glyph, Mode=OneWay}" />
-                        </TabViewItem.IconSource>
-                    </TabViewItem>
+                    <TabViewItem
+                        Header="{x:Bind Title, Mode=OneWay}"
+                        IconSource="{x:Bind ui:Ui.GlyphIcon(Glyph), Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}" />
                 </DataTemplate>
             </TabView.TabItemTemplate>
         </TabView>

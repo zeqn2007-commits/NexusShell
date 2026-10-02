@@ -29,6 +29,25 @@ public static class Ui
         };
     }
 
+    /// <summary>
+    /// A fresh icon for a glyph. TabViewItem builds its icon once from IconSource and ignores later
+    /// glyph changes, so a tab that navigates elsewhere needs a new IconSource object.
+    /// </summary>
+    public static Microsoft.UI.Xaml.Controls.IconSource GlyphIcon(string glyph) =>
+        new Microsoft.UI.Xaml.Controls.FontIconSource { Glyph = glyph };
+
+    /// <summary>A diagonal gradient, e.g. a game's generated artwork colours.</summary>
+    public static Brush Gradient(string? from, string? to) => new LinearGradientBrush
+    {
+        StartPoint = new Windows.Foundation.Point(0, 0),
+        EndPoint = new Windows.Foundation.Point(1, 1),
+        GradientStops =
+        {
+            new GradientStop { Color = Color(from ?? "#FF3A4A6B"), Offset = 0 },
+            new GradientStop { Color = Color(to ?? "#FF1E2638"), Offset = 1 }
+        }
+    };
+
     public static Color Color(string hex)
     {
         var value = Convert.ToUInt32(hex.TrimStart('#'), 16);

@@ -7,6 +7,105 @@
     xmlns:ui="using:Nexus.App.Converters"
     Background="Transparent">
 
+    <Page.Resources>
+        <!--
+            Game tiles: selection and keyboard focus draw rings around the cover only, so the
+            title and date underneath never look boxed in. The 164×246 cover sits 7 px inside
+            the tile; the rings use that margin.
+        -->
+        <Style x:Key="GameTileContainerStyle" TargetType="GridViewItem">
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="UseSystemFocusVisuals" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <Grid Background="{TemplateBinding Background}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="CoverOverlay.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="CoverOverlay.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Selected">
+                                        <VisualState.Setters>
+                                            <Setter Target="SelectionRing.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOverSelected">
+                                        <VisualState.Setters>
+                                            <Setter Target="SelectionRing.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                                            <Setter Target="CoverOverlay.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PressedSelected">
+                                        <VisualState.Setters>
+                                            <Setter Target="SelectionRing.BorderBrush" Value="{ThemeResource AccentFillColorSecondaryBrush}" />
+                                            <Setter Target="CoverOverlay.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="FocusStates">
+                                    <VisualState x:Name="Unfocused" />
+                                    <VisualState x:Name="PointerFocused" />
+                                    <VisualState x:Name="Focused">
+                                        <VisualState.Setters>
+                                            <Setter Target="FocusRing.BorderBrush" Value="{ThemeResource FocusStrokeColorOuterBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+
+                            <ContentPresenter
+                                Margin="7,7,7,0"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}" />
+                            <Border
+                                x:Name="CoverOverlay"
+                                Width="164"
+                                Height="246"
+                                Margin="7,7,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                CornerRadius="8"
+                                IsHitTestVisible="False" />
+                            <Border
+                                x:Name="SelectionRing"
+                                Width="172"
+                                Height="254"
+                                Margin="3,3,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                BorderBrush="Transparent"
+                                BorderThickness="2"
+                                CornerRadius="11"
+                                IsHitTestVisible="False" />
+                            <Border
+                                x:Name="FocusRing"
+                                Width="178"
+                                Height="260"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="13"
+                                IsHitTestVisible="False" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -23,18 +122,16 @@
             <SelectorBar
                 x:Name="SourceFilter"
                 VerticalAlignment="Center"
-                SelectionChanged="SourceFilter_SelectionChanged">
-                <SelectorBarItem IsSelected="True" Tag="all" Text="Все" />
-                <SelectorBarItem Tag="steam" Text="Steam" />
-                <SelectorBarItem Tag="epic" Text="Epic Games" />
-                <SelectorBarItem Tag="xbox" Text="Xbox" />
-                <SelectorBarItem Tag="local" Text="Локальные" />
-            </SelectorBar>
+                SelectionChanged="SourceFilter_SelectionChanged" />
             <StackPanel
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="2">
-                <Button AutomationProperties.Name="Добавить папку с играми" Style="{StaticResource NxSubtleButtonStyle}">
+                <Button
+                    AutomationProperties.Name="Добавить папку с играми"
+                    Click="AddFolder_Click"
+                    Style="{StaticResource NxCommandTextButtonStyle}"
+                    ToolTipService.ToolTip="Добавить папку, в которой лежат игры (например, D:\Games)">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE8F4;" />
                         <TextBlock Text="Добавить папку" />
@@ -42,6 +139,7 @@
                 </Button>
                 <Button
                     AutomationProperties.Name="Обновить библиотеку"
+                    Click="Refresh_Click"
                     Style="{StaticResource NxSubtleButtonStyle}"
                     ToolTipService.ToolTip="Обновить библиотеку">
                     <FontIcon FontSize="16" Glyph="&#xE72C;" />
@@ -51,6 +149,15 @@
                     Style="{StaticResource NxSubtleButtonStyle}"
                     ToolTipService.ToolTip="Другие команды">
                     <FontIcon FontSize="16" Glyph="&#xE712;" />
+                    <Button.Flyout>
+                        <MenuFlyout Opening="MoreMenu_Opening" Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem x:Name="ShowHiddenItem" Click="ShowHidden_Click" Text="Показать скрытые игры">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE7B3;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
                 </Button>
             </StackPanel>
         </Grid>
@@ -72,12 +179,13 @@
                     <!--  Featured: the most recently played game  -->
                     <Grid
                         Height="260"
+                        Background="{x:Bind ui:Ui.Gradient(ViewModel.Featured.PaletteFrom, ViewModel.Featured.PaletteTo), Mode=OneWay, FallbackValue={x:Null}}"
                         CornerRadius="8"
-                        Visibility="{x:Bind ui:Ui.Visible(HasFeatured)}">
+                        Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasFeatured), Mode=OneWay}">
                         <Image
-                            Source="{x:Bind ui:Ui.Image(ViewModel.Featured.HeroPath, 1400), FallbackValue={x:Null}}"
-                            Stretch="UniformToFill"
-                            VerticalAlignment="Center" />
+                            VerticalAlignment="Center"
+                            Source="{x:Bind ui:Ui.Image(ViewModel.Featured.HeroPath, 1400), Mode=OneWay, FallbackValue={x:Null}}"
+                            Stretch="UniformToFill" />
                         <Rectangle>
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -98,13 +206,17 @@
                             <TextBlock
                                 Foreground="White"
                                 Style="{StaticResource TitleLargeTextBlockStyle}"
-                                Text="{x:Bind ViewModel.Featured.Name, FallbackValue=''}" />
-                            <TextBlock Foreground="#CCFFFFFF" Text="{x:Bind FeaturedDetails}" />
+                                Text="{x:Bind ViewModel.Featured.Name, Mode=OneWay, FallbackValue=''}" />
+                            <TextBlock Foreground="#CCFFFFFF" Text="{x:Bind ViewModel.FeaturedDetails, Mode=OneWay}" />
                             <StackPanel
                                 Margin="0,14,0,0"
                                 Orientation="Horizontal"
                                 Spacing="8">
-                                <Button MinWidth="140" Style="{StaticResource AccentButtonStyle}">
+                                <Button
+                                    MinWidth="140"
+                                    Click="PlayFeatured_Click"
+                                    IsEnabled="{x:Bind ViewModel.Featured.CanLaunch, Mode=OneWay, FallbackValue=False}"
+                                    Style="{StaticResource AccentButtonStyle}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon FontSize="14" Glyph="&#xE768;" />
                                         <TextBlock Text="Играть" />
@@ -114,6 +226,7 @@
                                     AutomationProperties.Name="Открыть папку игры"
                                     Background="#33FFFFFF"
                                     BorderBrush="#40FFFFFF"
+                                    Click="OpenFeaturedFolder_Click"
                                     Foreground="White"
                                     ToolTipService.ToolTip="Открыть папку игры">
                                     <FontIcon FontSize="16" Glyph="&#xE838;" />
@@ -131,19 +244,24 @@
                                     Style="{StaticResource NxBodySecondaryTextStyle}"
                                     Text="{x:Bind ViewModel.CountText, Mode=OneWay}" />
                             </StackPanel>
+                            <ProgressRing
+                                Width="20"
+                                Height="20"
+                                HorizontalAlignment="Right"
+                                IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
                         </Grid>
 
+                        <!--  Pulled out by the tile's ring margin so the covers line up with the header  -->
                         <GridView
                             x:Name="GamesGrid"
+                            Margin="-7,-7,0,0"
+                            ContextRequested="GamesGrid_ContextRequested"
+                            DoubleTapped="GamesGrid_DoubleTapped"
                             IsItemClickEnabled="False"
+                            ItemContainerStyle="{StaticResource GameTileContainerStyle}"
                             ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}"
                             SelectedItem="{x:Bind ViewModel.SelectedGame, Mode=TwoWay}"
                             SelectionMode="Single">
-                            <GridView.ItemContainerStyle>
-                                <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
-                                    <Setter Property="Margin" Value="0,0,12,16" />
-                                </Style>
-                            </GridView.ItemContainerStyle>
                             <GridView.ItemTemplate>
                                 <DataTemplate x:DataType="models:GameItem">
                                     <StackPanel Width="164" Spacing="8">
@@ -177,6 +295,37 @@
                                 </DataTemplate>
                             </GridView.ItemTemplate>
                         </GridView>
+
+                        <!--  Empty library  -->
+                        <Border Style="{StaticResource NxCardStyle}" Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsEmpty), Mode=OneWay}">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE7FC;" />
+                                <StackPanel
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                                    <TextBlock FontWeight="SemiBold" Text="Игры не найдены" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Nexus находит игры Steam, Epic Games, Xbox и GOG сам. Другие игры появятся здесь, если добавить папку, где они лежат."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Click="AddFolder_Click"
+                                    Content="Добавить папку" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>
@@ -187,7 +336,7 @@
                 Width="{StaticResource NxDetailsPaneWidth}"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="1,0,0,0"
-                Visibility="{x:Bind ui:Ui.Visible(HasSelection), Mode=OneWay}">
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasSelection), Mode=OneWay}">
                 <ScrollViewer Padding="20,20,20,24" VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="16">
                         <controls:GameCover
@@ -208,7 +357,11 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Button HorizontalAlignment="Stretch" Style="{StaticResource AccentButtonStyle}">
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Click="PlaySelected_Click"
+                                IsEnabled="{x:Bind ViewModel.SelectedGame.CanLaunch, Mode=OneWay, FallbackValue=False}"
+                                Style="{StaticResource AccentButtonStyle}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="14" Glyph="&#xE768;" />
                                     <TextBlock Text="Играть" />
@@ -217,14 +370,30 @@
                             <Button
                                 Grid.Column="1"
                                 AutomationProperties.Name="Открыть папку игры"
+                                Click="OpenSelectedFolder_Click"
                                 ToolTipService.ToolTip="Открыть папку игры">
                                 <FontIcon FontSize="16" Glyph="&#xE838;" />
                             </Button>
                             <Button
                                 Grid.Column="2"
                                 AutomationProperties.Name="Другие действия"
-                                ToolTipService.ToolTip="Скрыть, удалить, свойства">
+                                ToolTipService.ToolTip="Другие действия">
                                 <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                        <MenuFlyoutItem Click="ShowInExplorer_Click" Text="Показать в Проводнике">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xEC50;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutItem Click="HideSelected_Click" Text="Скрыть из библиотеки">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xED1A;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
                             </Button>
                         </Grid>
                         <Rectangle Style="{StaticResource NxDividerStyle}" />
@@ -240,7 +409,10 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Последний запуск" TextWrapping="Wrap" />
+                                <TextBlock
+                                    Style="{StaticResource NxBodySecondaryTextStyle}"
+                                    Text="Последний запуск"
+                                    TextWrapping="Wrap" />
                                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectedGame.DisplayLastPlayed, Mode=OneWay, FallbackValue=''}" />
                                 <TextBlock
                                     Grid.Row="1"

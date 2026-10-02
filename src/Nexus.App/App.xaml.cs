@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Nexus.App.Services;
 using Nexus.App.Shell;
 using Nexus.App.ViewModels;
+using Nexus.Core.Games;
 using Nexus.Core.Integration;
 using Nexus.Core.Operations;
 using Nexus.Core.Settings;
@@ -94,6 +95,7 @@ public partial class App : Application
         services.AddSingleton<RecentItems>();
         services.AddSingleton<RecycleBinService>();
         services.AddSingleton<UndoHistory>();
+        services.AddSingleton<GameLibrary>();
         services.AddSingleton<DefaultFileManager>(_ => new DefaultFileManager());
 
         // App services
@@ -110,6 +112,7 @@ public partial class App : Application
         services.AddTransient<ThisPcViewModel>();
         services.AddTransient<RecycleBinViewModel>();
         services.AddTransient<NetworkViewModel>();
+        services.AddTransient<AppsViewModel>();
         services.AddTransient<GamesViewModel>();
         services.AddTransient<AiCenterViewModel>();
         services.AddTransient<SettingsViewModel>();
