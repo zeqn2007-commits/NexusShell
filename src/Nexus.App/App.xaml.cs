@@ -1,79 +1,118 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Nexus.App.Services;
+using Nexus.App.Shell;
+using Nexus.App.ViewModels;
+using Nexus.Core.Integration;
+using Nexus.Core.Operations;
+using Nexus.Core.Settings;
+using Nexus.Core.Shell;
+using Nexus.Core.Threading;
 
 namespace Nexus.App;
 
 public partial class App : Application
 {
-    private const long MaxLogSizeBytes = 1024 * 1024;
-    private Window? _window;
+    private MainWindow? _window;
 
     public App()
     {
-        WriteTrace("App constructor: before InitializeComponent");
         InitializeComponent();
-        WriteTrace("App constructor: after InitializeComponent");
-        RequestedTheme = ApplicationTheme.Dark;
-        UnhandledException += App_UnhandledException;
+        Services = ConfigureServices();
+        UnhandledException += (_, e) => CrashLog.Write(e.Exception);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                CrashLog.Write(exception);
+            }
+        };
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            CrashLog.Write(e.Exception);
+            e.SetObserved();
+        };
     }
+
+    public static IServiceProvider Services { get; private set; } = null!;
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        WriteTrace("OnLaunched: begin");
-        try
+        var commandLine = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        var options = StartupOptions.Parse(commandLine);
+        var window = new MainWindow(
+            Services.GetRequiredService<ShellViewModel>(),
+            Services.GetRequiredService<WindowContext>(),
+            Services.GetRequiredService<SettingsStore>(),
+            options);
+        _window = window;
+        window.Activate();
+        window.HandleLaunch(LaunchRequest.Parse(commandLine), newTab: false);
+
+        // Later launches (a folder double-click, Win+E) arrive here from Program.
+        Program.Redirected += (_, line) => window.DispatcherQueue.TryEnqueue(() =>
         {
-            _window = new MainWindow();
-            WriteTrace("OnLaunched: MainWindow constructed");
-            _window.Activate();
-            WriteTrace("OnLaunched: MainWindow activated");
-        }
-        catch (Exception exception)
-        {
-            WriteCrashLog(exception);
-            throw;
-        }
+            window.HandleLaunch(LaunchRequest.Parse(StripExecutable(LaunchRequest.SplitCommandLine(line))), newTab: true);
+            window.BringToFront();
+        });
+
+        KeepRegistrationValid();
     }
 
-    private static void App_UnhandledException(
-        object sender,
-        Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
-    {
-        WriteCrashLog(e.Exception);
-    }
+    private static IReadOnlyList<string> StripExecutable(IReadOnlyList<string> parts) =>
+        parts.Count > 0 && (parts[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || parts[0].EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            ? parts.Skip(1).ToArray()
+            : parts;
 
-    private static void WriteCrashLog(Exception exception)
-    {
-        AppendLog(
-            "nexus-crash.log",
-            $"{DateTimeOffset.Now:O}{Environment.NewLine}{exception}{Environment.NewLine}{Environment.NewLine}");
-    }
-
-    private static void WriteTrace(string message)
-    {
-        AppendLog(
-            "nexus-startup.log",
-            $"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
-    }
-
-    private static void AppendLog(string fileName, string message)
+    /// <summary>If folders are set to open in Nexus but the registered copy was moved or removed, point them here.</summary>
+    private static void KeepRegistrationValid()
     {
         try
         {
-            var logDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Nexus Shell",
-                "Logs");
-            Directory.CreateDirectory(logDirectory);
-            var path = Path.Combine(logDirectory, fileName);
-            if (File.Exists(path) && new FileInfo(path).Length > MaxLogSizeBytes)
+            var manager = Services.GetRequiredService<DefaultFileManager>();
+            if (manager.IsEnabled() && manager.RegisteredExecutable() is { } registered && !File.Exists(registered)
+                && Environment.ProcessPath is { } current)
             {
-                File.Move(path, path + ".old", overwrite: true);
+                manager.Enable(current);
             }
-
-            File.AppendAllText(path, message);
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
-            // Диагностика не должна влиять на работу приложения.
+            CrashLog.Write(exception);
         }
+    }
+
+    private static ServiceProvider ConfigureServices()
+    {
+        var services = new ServiceCollection();
+
+        // Core
+        services.AddSingleton<SettingsStore>();
+        services.AddSingleton<FileOperationService>();
+        services.AddSingleton<ShellImageProvider>();
+        services.AddSingleton(_ => new StaTaskScheduler(2, "Nexus Shell"));
+        services.AddSingleton<RecentItems>();
+        services.AddSingleton<RecycleBinService>();
+        services.AddSingleton<UndoHistory>();
+        services.AddSingleton<DefaultFileManager>(_ => new DefaultFileManager());
+
+        // App services
+        services.AddSingleton<WindowContext>();
+        services.AddSingleton<IconCache>();
+        services.AddSingleton<DialogService>();
+        services.AddSingleton<PreviewService>();
+        services.AddSingleton<ClassicMenuService>();
+
+        // View models
+        services.AddSingleton<ShellViewModel>();
+        services.AddTransient<HomeViewModel>();
+        services.AddTransient<FolderViewModel>();
+        services.AddTransient<ThisPcViewModel>();
+        services.AddTransient<RecycleBinViewModel>();
+        services.AddTransient<NetworkViewModel>();
+        services.AddTransient<GamesViewModel>();
+        services.AddTransient<AiCenterViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        return services.BuildServiceProvider();
     }
 }

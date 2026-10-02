@@ -1,0 +1,270 @@
+<Page
+    x:Class="Nexus.App.Views.GamesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexus.App.Controls"
+    xmlns:models="using:Nexus.App.Models"
+    xmlns:ui="using:Nexus.App.Converters"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Command bar: source filter + library actions  -->
+        <Grid Padding="12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <SelectorBar
+                x:Name="SourceFilter"
+                VerticalAlignment="Center"
+                SelectionChanged="SourceFilter_SelectionChanged">
+                <SelectorBarItem IsSelected="True" Tag="all" Text="Все" />
+                <SelectorBarItem Tag="steam" Text="Steam" />
+                <SelectorBarItem Tag="epic" Text="Epic Games" />
+                <SelectorBarItem Tag="xbox" Text="Xbox" />
+                <SelectorBarItem Tag="local" Text="Локальные" />
+            </SelectorBar>
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="2">
+                <Button AutomationProperties.Name="Добавить папку с играми" Style="{StaticResource NxSubtleButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE8F4;" />
+                        <TextBlock Text="Добавить папку" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    AutomationProperties.Name="Обновить библиотеку"
+                    Style="{StaticResource NxSubtleButtonStyle}"
+                    ToolTipService.ToolTip="Обновить библиотеку">
+                    <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                </Button>
+                <Button
+                    AutomationProperties.Name="Другие команды"
+                    Style="{StaticResource NxSubtleButtonStyle}"
+                    ToolTipService.ToolTip="Другие команды">
+                    <FontIcon FontSize="16" Glyph="&#xE712;" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Rectangle Grid.Row="1" Style="{StaticResource NxDividerStyle}" />
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel
+                    MaxWidth="1480"
+                    Padding="{StaticResource NxPagePadding}"
+                    Spacing="28">
+
+                    <!--  Featured: the most recently played game  -->
+                    <Grid
+                        Height="260"
+                        CornerRadius="8"
+                        Visibility="{x:Bind ui:Ui.Visible(HasFeatured)}">
+                        <Image
+                            Source="{x:Bind ui:Ui.Image(ViewModel.Featured.HeroPath, 1400), FallbackValue={x:Null}}"
+                            Stretch="UniformToFill"
+                            VerticalAlignment="Center" />
+                        <Rectangle>
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Offset="0" Color="#E6000000" />
+                                    <GradientStop Offset="0.55" Color="#66000000" />
+                                    <GradientStop Offset="1" Color="#00000000" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <StackPanel
+                            Margin="32,0"
+                            VerticalAlignment="Center"
+                            Spacing="6">
+                            <TextBlock
+                                Foreground="#CCFFFFFF"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="ПРОДОЛЖИТЬ ИГРУ" />
+                            <TextBlock
+                                Foreground="White"
+                                Style="{StaticResource TitleLargeTextBlockStyle}"
+                                Text="{x:Bind ViewModel.Featured.Name, FallbackValue=''}" />
+                            <TextBlock Foreground="#CCFFFFFF" Text="{x:Bind FeaturedDetails}" />
+                            <StackPanel
+                                Margin="0,14,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button MinWidth="140" Style="{StaticResource AccentButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE768;" />
+                                        <TextBlock Text="Играть" />
+                                    </StackPanel>
+                                </Button>
+                                <Button
+                                    AutomationProperties.Name="Открыть папку игры"
+                                    Background="#33FFFFFF"
+                                    BorderBrush="#40FFFFFF"
+                                    Foreground="White"
+                                    ToolTipService.ToolTip="Открыть папку игры">
+                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Библиотека" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource NxBodySecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.CountText, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <GridView
+                            x:Name="GamesGrid"
+                            IsItemClickEnabled="False"
+                            ItemsSource="{x:Bind ViewModel.Games, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.SelectedGame, Mode=TwoWay}"
+                            SelectionMode="Single">
+                            <GridView.ItemContainerStyle>
+                                <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                    <Setter Property="Margin" Value="0,0,12,16" />
+                                </Style>
+                            </GridView.ItemContainerStyle>
+                            <GridView.ItemTemplate>
+                                <DataTemplate x:DataType="models:GameItem">
+                                    <StackPanel Width="164" Spacing="8">
+                                        <Grid>
+                                            <controls:GameCover
+                                                Width="164"
+                                                Height="246"
+                                                DecodeWidth="330"
+                                                Game="{x:Bind}" />
+                                            <Border
+                                                Margin="8"
+                                                Padding="8,2"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                Background="{ThemeResource NxCoverScrimBrush}"
+                                                CornerRadius="4">
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Foreground="White"
+                                                    Text="{x:Bind SourceLabel}" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Padding="2,0" Spacing="1">
+                                            <TextBlock
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource NxItemTitleTextStyle}"
+                                                Text="{x:Bind Name}" />
+                                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind DisplayLastPlayed}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  Details pane  -->
+            <Border
+                Grid.Column="1"
+                Width="{StaticResource NxDetailsPaneWidth}"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="1,0,0,0"
+                Visibility="{x:Bind ui:Ui.Visible(HasSelection), Mode=OneWay}">
+                <ScrollViewer Padding="20,20,20,24" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="16">
+                        <controls:GameCover
+                            Height="240"
+                            HorizontalAlignment="Stretch"
+                            DecodeWidth="560"
+                            Game="{x:Bind ViewModel.SelectedGame, Mode=OneWay}" />
+                        <StackPanel Spacing="4">
+                            <TextBlock
+                                Style="{StaticResource SubtitleTextBlockStyle}"
+                                Text="{x:Bind ViewModel.SelectedGame.Name, Mode=OneWay, FallbackValue=''}"
+                                TextWrapping="Wrap" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.SelectedGame.SourceLabel, Mode=OneWay, FallbackValue=''}" />
+                        </StackPanel>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button HorizontalAlignment="Stretch" Style="{StaticResource AccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE768;" />
+                                    <TextBlock Text="Играть" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                Grid.Column="1"
+                                AutomationProperties.Name="Открыть папку игры"
+                                ToolTipService.ToolTip="Открыть папку игры">
+                                <FontIcon FontSize="16" Glyph="&#xE838;" />
+                            </Button>
+                            <Button
+                                Grid.Column="2"
+                                AutomationProperties.Name="Другие действия"
+                                ToolTipService.ToolTip="Скрыть, удалить, свойства">
+                                <FontIcon FontSize="16" Glyph="&#xE712;" />
+                            </Button>
+                        </Grid>
+                        <Rectangle Style="{StaticResource NxDividerStyle}" />
+                        <StackPanel Spacing="12">
+                            <TextBlock Style="{StaticResource NxGroupHeaderStyle}" Text="Сведения" />
+                            <Grid ColumnSpacing="12" RowSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="104" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Последний запуск" TextWrapping="Wrap" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectedGame.DisplayLastPlayed, Mode=OneWay, FallbackValue=''}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Style="{StaticResource NxBodySecondaryTextStyle}"
+                                    Text="Размер" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Text="{x:Bind ViewModel.SelectedGame.DisplaySize, Mode=OneWay, FallbackValue=''}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Style="{StaticResource NxBodySecondaryTextStyle}"
+                                    Text="Папка" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.SelectedGame.InstallPath, Mode=OneWay, FallbackValue=''}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

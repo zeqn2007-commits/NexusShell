@@ -1,0 +1,329 @@
+<Page
+    x:Class="Nexus.App.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexus.App.Controls"
+    xmlns:models="using:Nexus.App.Models"
+    xmlns:ui="using:Nexus.App.Converters"
+    xmlns:vm="using:Nexus.App.ViewModels"
+    Background="Transparent">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid
+            x:Name="PageGrid"
+            MaxWidth="1480"
+            Padding="{StaticResource NxPagePadding}"
+            ColumnSpacing="24"
+            RowSpacing="28">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="SideColumn" Width="360" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Wide">
+                        <VisualState.StateTriggers>
+                            <AdaptiveTrigger MinWindowWidth="1240" />
+                        </VisualState.StateTriggers>
+                    </VisualState>
+                    <VisualState x:Name="Narrow">
+                        <VisualState.StateTriggers>
+                            <AdaptiveTrigger MinWindowWidth="0" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="SideColumn.Width" Value="0" />
+                            <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                            <Setter Target="SidePanel.(Grid.Row)" Value="3" />
+                            <Setter Target="PageGrid.ColumnSpacing" Value="0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <!--  Header  -->
+            <StackPanel Grid.ColumnSpan="2" Spacing="2">
+                <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="Главная" />
+                <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.DateLine}" />
+            </StackPanel>
+
+            <!--  Quick access  -->
+            <StackPanel
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Spacing="12">
+                <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Быстрый доступ" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.QuickAccess}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="8"
+                            MinItemHeight="68"
+                            MinItemWidth="200"
+                            MinRowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:QuickAccessItem">
+                            <Button
+                                Padding="12,10"
+                                AutomationProperties.Name="{x:Bind Title}"
+                                Click="QuickAccess_Click"
+                                ContextRequested="QuickAccess_ContextRequested"
+                                Style="{StaticResource NxCardButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="{x:Bind Path}">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <controls:FileIcon
+                                        VerticalAlignment="Center"
+                                        IconSize="40"
+                                        Kind="Folder"
+                                        ShowTile="True"
+                                        Visibility="{x:Bind ui:Ui.Collapsed(HasIcon), Mode=OneWay}" />
+                                    <Image
+                                        Width="40"
+                                        Height="40"
+                                        Source="{x:Bind Icon, Mode=OneWay}" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="1">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Title}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon
+                                                FontSize="10"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE718;"
+                                                Visibility="{x:Bind ui:Ui.Visible(IsPinned)}" />
+                                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Subtitle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <!--  Recent / favourites  -->
+            <Grid Grid.Row="2" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <SelectorBar x:Name="FileListSelector" SelectionChanged="FileListSelector_SelectionChanged">
+                        <SelectorBarItem
+                            x:Name="RecentSelectorItem"
+                            IsSelected="True"
+                            Text="Недавние">
+                            <SelectorBarItem.Icon>
+                                <FontIcon Glyph="&#xE81C;" />
+                            </SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                        <SelectorBarItem Text="Избранное">
+                            <SelectorBarItem.Icon>
+                                <FontIcon Glyph="&#xE734;" />
+                            </SelectorBarItem.Icon>
+                        </SelectorBarItem>
+                    </SelectorBar>
+                    <HyperlinkButton
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Click="ShowAll_Click"
+                        Content="Показать все"
+                        Style="{StaticResource NxLinkButtonStyle}" />
+                </Grid>
+
+                <Border Grid.Row="1" Padding="0,4" Style="{StaticResource NxCardStyle}">
+                    <Grid MinHeight="120">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid
+                            Height="32"
+                            Padding="16,0,20,0"
+                            ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="220" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="36,0,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxSecondaryTextStyle}"
+                                Text="Имя" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxSecondaryTextStyle}"
+                                Text="Дата" />
+                            <TextBlock
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxSecondaryTextStyle}"
+                                Text="Расположение" />
+                        </Grid>
+                        <ListView
+                            x:Name="FileListView"
+                            Grid.Row="1"
+                            Padding="4,0"
+                            ContainerContentChanging="FileList_ContainerContentChanging"
+                            DoubleTapped="FileList_DoubleTapped"
+                            ItemsSource="{x:Bind ViewModel.FileList, Mode=OneWay}"
+                            KeyDown="FileList_KeyDown"
+                            SelectionMode="Single">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FileItemViewModel">
+                                    <Grid
+                                        Height="40"
+                                        Padding="0,0,8,0"
+                                        ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="160" />
+                                            <ColumnDefinition Width="220" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="24" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:FileIcon
+                                                VerticalAlignment="Center"
+                                                IconSize="20"
+                                                Kind="{x:Bind Kind}"
+                                                Visibility="{x:Bind ui:Ui.Collapsed(HasIcon), Mode=OneWay}" />
+                                            <Image
+                                                Width="20"
+                                                Height="20"
+                                                Source="{x:Bind Icon, Mode=OneWay}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource NxItemTitleTextStyle}"
+                                                Text="{x:Bind DisplayName}"
+                                                ToolTipService.ToolTip="{x:Bind Path}" />
+                                        </Grid>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource NxBodySecondaryTextStyle}"
+                                            Text="{x:Bind RelativeModified}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource NxBodySecondaryTextStyle}"
+                                            Text="{x:Bind Location}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="24,24"
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.FileListEmptyText, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsFileListEmpty), Mode=OneWay}" />
+                        <ProgressRing
+                            Grid.Row="1"
+                            Width="24"
+                            Height="24"
+                            Margin="24"
+                            IsActive="{x:Bind ViewModel.IsLoadingFiles, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!--  Side panel  -->
+            <StackPanel
+                x:Name="SidePanel"
+                Grid.Row="2"
+                Grid.Column="1"
+                Spacing="24">
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Накопители" />
+                        <HyperlinkButton
+                            HorizontalAlignment="Right"
+                            Click="ThisPc_Click"
+                            Content="Этот компьютер"
+                            Style="{StaticResource NxLinkButtonStyle}" />
+                    </Grid>
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Drives}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="8" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:DriveItem">
+                                <Button
+                                    Padding="14,12"
+                                    AutomationProperties.Name="{x:Bind Name}"
+                                    Click="Drive_Click"
+                                    Style="{StaticResource NxCardButtonStyle}"
+                                    Tag="{x:Bind RootPath}">
+                                    <Grid ColumnSpacing="12" RowSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <controls:FileIcon
+                                            Grid.RowSpan="3"
+                                            VerticalAlignment="Center"
+                                            IconSize="40"
+                                            Kind="Drive"
+                                            ShowTile="True"
+                                            Visibility="{x:Bind ui:Ui.Collapsed(HasIcon), Mode=OneWay}" />
+                                        <Image
+                                            Grid.RowSpan="3"
+                                            Width="40"
+                                            Height="40"
+                                            VerticalAlignment="Center"
+                                            Source="{x:Bind Icon, Mode=OneWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Name}" />
+                                        <ProgressBar
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Maximum="100"
+                                            ShowError="{x:Bind IsAlmostFull}"
+                                            Value="{x:Bind UsedPercent}" />
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Style="{StaticResource NxSecondaryTextStyle}"
+                                            Text="{x:Bind Summary}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

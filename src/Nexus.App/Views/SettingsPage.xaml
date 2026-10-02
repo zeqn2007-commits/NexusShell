@@ -1,0 +1,156 @@
+<Page
+    x:Class="Nexus.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <Page.Resources>
+        <!--  A Windows 11 Settings-style row: icon, title, description, control on the right  -->
+        <Style x:Key="SettingsCardStyle" TargetType="Border" BasedOn="{StaticResource NxCardStyle}">
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="MinHeight" Value="68" />
+        </Style>
+        <Style x:Key="SettingsGroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource NxGroupHeaderStyle}">
+            <Setter Property="Margin" Value="2,20,0,6" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <!--  Like Windows 11 Settings: cards stretch up to a readable width and stay left-aligned  -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1088" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Padding="{StaticResource NxPagePadding}" Spacing="4">
+                <TextBlock
+                    Margin="0,0,0,8"
+                    Style="{StaticResource NxPageTitleStyle}"
+                    Text="Настройки" />
+
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Файловый менеджер по умолчанию" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon VerticalAlignment="Center" Glyph="&#xEC50;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Открывать папки в Nexus вместо Проводника" />
+                            <TextBlock
+                                Style="{StaticResource NxSecondaryTextStyle}"
+                                Text="Папки, диски и Win+E открываются здесь. Панель задач и «Пуск» остаются системными."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            MinWidth="0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Открывать папки в Nexus"
+                            IsOn="{x:Bind ViewModel.OpensFolders, Mode=TwoWay}"
+                            OffContent="Выкл."
+                            OnContent="Вкл." />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Внешний вид" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon VerticalAlignment="Center" Glyph="&#xE790;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Тема" />
+                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Цвет акцента берётся из настроек Windows." />
+                        </StackPanel>
+                        <ComboBox
+                            Grid.Column="2"
+                            MinWidth="200"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Тема"
+                            SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="Как в Windows" />
+                            <ComboBoxItem Content="Светлая" />
+                            <ComboBoxItem Content="Тёмная" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Файлы и папки" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon VerticalAlignment="Center" Glyph="&#xE7B3;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Показывать скрытые элементы" />
+                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Защищённые системные файлы остаются скрытыми, как в Проводнике." />
+                        </StackPanel>
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            MinWidth="0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Показывать скрытые элементы"
+                            IsOn="{x:Bind ViewModel.ShowHiddenItems, Mode=TwoWay}"
+                            OffContent="Выкл."
+                            OnContent="Вкл." />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon VerticalAlignment="Center" Glyph="&#xE8C1;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Показывать расширения имён файлов" />
+                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Например, «отчёт.docx» вместо «отчёт»." />
+                        </StackPanel>
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            MinWidth="0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Показывать расширения имён файлов"
+                            IsOn="{x:Bind ViewModel.ShowFileExtensions, Mode=TwoWay}"
+                            OffContent="Выкл."
+                            OnContent="Вкл." />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="О программе" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image
+                            Width="32"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Source="ms-appx:///Assets/AppIcon.png" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Nexus" />
+                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind VersionText}" />
+                        </StackPanel>
+                        <Button
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Click="OpenDataFolder_Click"
+                            Content="Папка настроек и журналов" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

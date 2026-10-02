@@ -1,0 +1,215 @@
+<Page
+    x:Class="Nexus.App.Views.RecycleBinPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexus.App.Controls"
+    xmlns:ui="using:Nexus.App.Converters"
+    xmlns:vm="using:Nexus.App.ViewModels"
+    Background="Transparent"
+    KeyDown="Page_KeyDown">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Command bar  -->
+        <StackPanel
+            Padding="12,0"
+            Orientation="Horizontal"
+            Spacing="2">
+            <Button
+                AutomationProperties.Name="Восстановить"
+                Click="Restore_Click"
+                IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                Style="{StaticResource NxCommandTextButtonStyle}"
+                ToolTipService.ToolTip="Вернуть выделенные элементы туда, откуда они были удалены">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE7A7;" />
+                    <TextBlock Text="Восстановить" />
+                </StackPanel>
+            </Button>
+            <Button
+                AutomationProperties.Name="Восстановить все"
+                Click="RestoreAll_Click"
+                IsEnabled="{x:Bind ViewModel.HasItems, Mode=OneWay}"
+                Style="{StaticResource NxCommandTextButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xE777;" />
+                    <TextBlock Text="Восстановить все" />
+                </StackPanel>
+            </Button>
+
+            <Rectangle Style="{StaticResource NxVerticalDividerStyle}" />
+
+            <Button
+                AutomationProperties.Name="Удалить навсегда"
+                Click="Delete_Click"
+                IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                Style="{StaticResource NxCommandTextButtonStyle}"
+                ToolTipService.ToolTip="Удалить навсегда (Delete)">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xEA39;" />
+                    <TextBlock Text="Удалить навсегда" />
+                </StackPanel>
+            </Button>
+            <Button
+                AutomationProperties.Name="Очистить корзину"
+                Click="Empty_Click"
+                IsEnabled="{x:Bind ViewModel.HasItems, Mode=OneWay}"
+                Style="{StaticResource NxCommandTextButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xEA99;" />
+                    <TextBlock Text="Очистить корзину" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Rectangle Grid.Row="1" Style="{StaticResource NxDividerStyle}" />
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Column headers  -->
+            <Grid Padding="20,4,28,0" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasItems), Mode=OneWay}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="200" MaxWidth="480" />
+                    <ColumnDefinition Width="*" MinWidth="200" MaxWidth="480" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+                <Button Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Name">
+                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" Spacing="6">
+                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Имя" />
+                        <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 0), Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Location">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Исходное расположение" />
+                        <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 1), Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="2" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Deleted">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Дата удаления" />
+                        <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 2), Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Size">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Размер" />
+                        <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 3), Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <ListView
+                x:Name="ItemsList"
+                Grid.Row="1"
+                Padding="8,0,8,8"
+                ContainerContentChanging="Items_ContainerContentChanging"
+                ContextRequested="Items_ContextRequested"
+                ItemContainerStyle="{StaticResource NxFileRowContainerStyle}"
+                ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                SelectionChanged="Items_SelectionChanged"
+                SelectionMode="Extended">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:RecycleItemViewModel">
+                        <Grid Height="{StaticResource NxFileRowHeight}" Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="200" MaxWidth="480" />
+                                <ColumnDefinition Width="*" MinWidth="200" MaxWidth="480" />
+                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="110" />
+                            </Grid.ColumnDefinitions>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <controls:FileIcon
+                                    VerticalAlignment="Center"
+                                    IconSize="18"
+                                    Kind="{x:Bind Kind}"
+                                    Visibility="{x:Bind ui:Ui.Collapsed(HasIcon), Mode=OneWay}" />
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    VerticalAlignment="Center"
+                                    Source="{x:Bind Icon, Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource NxItemTitleTextStyle}"
+                                    Text="{x:Bind Name}"
+                                    ToolTipService.ToolTip="{x:Bind TypeName}" />
+                            </Grid>
+                            <TextBlock
+                                Grid.Column="1"
+                                Padding="13,0,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxBodySecondaryTextStyle}"
+                                Text="{x:Bind OriginalFolder}"
+                                ToolTipService.ToolTip="{x:Bind OriginalFolder}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Padding="13,0,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxBodySecondaryTextStyle}"
+                                Text="{x:Bind DeletedText}" />
+                            <TextBlock
+                                Grid.Column="3"
+                                Padding="0,0,16,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxBodySecondaryTextStyle}"
+                                Text="{x:Bind SizeText}"
+                                TextAlignment="Right" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <ProgressBar
+                Grid.Row="1"
+                Margin="16,0"
+                VerticalAlignment="Top"
+                IsIndeterminate="True"
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsLoading), Mode=OneWay}" />
+
+            <!--  Empty state  -->
+            <StackPanel
+                Grid.RowSpan="2"
+                MaxWidth="420"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8"
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsEmpty), Mode=OneWay}">
+                <FontIcon
+                    FontSize="48"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Glyph="&#xE74D;" />
+                <TextBlock
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="Корзина пуста"
+                    TextAlignment="Center" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="Удалённые файлы попадают сюда. Их можно восстановить, пока корзина не очищена."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

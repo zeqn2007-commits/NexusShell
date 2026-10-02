@@ -1,0 +1,139 @@
+<Page
+    x:Class="Nexus.App.Views.ThisPcPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexus.App.Controls"
+    xmlns:models="using:Nexus.App.Models"
+    xmlns:ui="using:Nexus.App.Converters"
+    xmlns:io="using:Nexus.Core.IO"
+    Background="Transparent">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            MaxWidth="1480"
+            Padding="{StaticResource NxPagePadding}"
+            Spacing="28">
+
+            <StackPanel Spacing="2">
+                <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="Этот компьютер" />
+                <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  Drives, with free space as in Explorer  -->
+            <StackPanel Spacing="12">
+                <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Устройства и диски" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Drives}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="8"
+                            MinItemHeight="92"
+                            MinItemWidth="320"
+                            MinRowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:DriveItem">
+                            <Button
+                                Padding="16,14"
+                                AutomationProperties.Name="{x:Bind Name}"
+                                Click="Drive_Click"
+                                ContextRequested="Drive_ContextRequested"
+                                Style="{StaticResource NxCardButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="{x:Bind Details}">
+                                <Grid ColumnSpacing="16" RowSpacing="6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <controls:FileIcon
+                                        Grid.RowSpan="3"
+                                        VerticalAlignment="Center"
+                                        IconSize="44"
+                                        Kind="Drive"
+                                        ShowTile="True"
+                                        Visibility="{x:Bind ui:Ui.Collapsed(HasIcon), Mode=OneWay}" />
+                                    <Image
+                                        Grid.RowSpan="3"
+                                        Width="48"
+                                        Height="48"
+                                        VerticalAlignment="Center"
+                                        Source="{x:Bind Icon, Mode=OneWay}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        FontWeight="SemiBold"
+                                        Style="{StaticResource NxItemTitleTextStyle}"
+                                        Text="{x:Bind Name}" />
+                                    <ProgressBar
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Maximum="100"
+                                        ShowError="{x:Bind IsAlmostFull}"
+                                        Value="{x:Bind UsedPercent}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Style="{StaticResource NxSecondaryTextStyle}"
+                                        Text="{x:Bind Summary}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <!--  Network locations added in Explorer  -->
+            <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasNetworkLocations), Mode=OneWay}">
+                <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Сетевые расположения" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.NetworkLocations}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="8"
+                            MinItemHeight="68"
+                            MinItemWidth="320"
+                            MinRowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="io:NetworkLocation">
+                            <Button
+                                Padding="12,10"
+                                AutomationProperties.Name="{x:Bind Name}"
+                                Click="Location_Click"
+                                Style="{StaticResource NxCardButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="{x:Bind Target}">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <controls:FileIcon
+                                        VerticalAlignment="Center"
+                                        IconSize="40"
+                                        Kind="Folder"
+                                        ShowTile="True" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="1">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Name}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Target}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
