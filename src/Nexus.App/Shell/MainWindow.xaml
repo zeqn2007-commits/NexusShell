@@ -43,7 +43,18 @@
             TabItemsSource="{x:Bind ViewModel.Tabs}"
             TabWidthMode="Equal">
             <TabView.Resources>
-                <x:Double x:Key="TabViewItemMaxWidth">240</x:Double>
+                <ResourceDictionary>
+                    <!--  The selected tab merges with the toolbar, also when the transparent materials thin it out  -->
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Default">
+                            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="NxChromeBackgroundBrush" />
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Light">
+                            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="NxChromeBackgroundBrush" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                    <x:Double x:Key="TabViewItemMaxWidth">240</x:Double>
+                </ResourceDictionary>
             </TabView.Resources>
             <TabView.TabStripHeader>
                 <Grid Padding="14,0,6,0" VerticalAlignment="Center">
@@ -221,7 +232,7 @@
 
                 <NavigationViewItemHeader x:Name="FoldersHeader" Content="Папки" />
 
-                <NavigationViewItemHeader Content="Библиотеки" />
+                <NavigationViewItemHeader x:Name="LibrariesHeader" Content="Библиотеки" />
                 <NavigationViewItem Content="Приложения" Tag="apps">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE71D;" />

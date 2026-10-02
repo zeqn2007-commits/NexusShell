@@ -2,16 +2,21 @@
     x:Class="Nexus.App.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Nexus.App.Controls"
+    xmlns:ui="using:Nexus.App.Converters"
     Background="Transparent">
 
     <Page.Resources>
-        <!--  A Windows 11 Settings-style row: icon, title, description, control on the right  -->
-        <Style x:Key="SettingsCardStyle" TargetType="Border" BasedOn="{StaticResource NxCardStyle}">
-            <Setter Property="Padding" Value="16,14" />
-            <Setter Property="MinHeight" Value="68" />
-        </Style>
         <Style x:Key="SettingsGroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource NxGroupHeaderStyle}">
-            <Setter Property="Margin" Value="2,20,0,6" />
+            <Setter Property="Margin" Value="2,24,0,6" />
+        </Style>
+        <Style x:Key="SettingsToggleStyle" TargetType="ToggleSwitch">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="OnContent" Value="Вкл." />
+            <Setter Property="OffContent" Value="Выкл." />
+        </Style>
+        <Style x:Key="SettingsComboStyle" TargetType="ComboBox">
+            <Setter Property="MinWidth" Value="220" />
         </Style>
     </Page.Resources>
 
@@ -22,112 +27,427 @@
                 <ColumnDefinition Width="*" MaxWidth="1088" />
             </Grid.ColumnDefinitions>
             <StackPanel Padding="{StaticResource NxPagePadding}" Spacing="4">
-                <TextBlock
-                    Margin="0,0,0,8"
-                    Style="{StaticResource NxPageTitleStyle}"
-                    Text="Настройки" />
+                <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="Настройки" />
 
-                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Файловый менеджер по умолчанию" />
-                <Border Style="{StaticResource SettingsCardStyle}">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon VerticalAlignment="Center" Glyph="&#xEC50;" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Открывать папки в Nexus вместо Проводника" />
-                            <TextBlock
-                                Style="{StaticResource NxSecondaryTextStyle}"
-                                Text="Папки, диски и Win+E открываются здесь. Панель задач и «Пуск» остаются системными."
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <ToggleSwitch
-                            Grid.Column="2"
-                            MinWidth="0"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Открывать папки в Nexus"
-                            IsOn="{x:Bind ViewModel.OpensFolders, Mode=TwoWay}"
-                            OffContent="Выкл."
-                            OnContent="Вкл." />
-                    </Grid>
-                </Border>
+                <!--  Startup  -->
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Запуск" />
+                <controls:SettingsCard
+                    Description="Папка, открытая из другой программы или с рабочего стола, всё равно откроется сразу"
+                    Glyph="&#xE7E8;"
+                    Header="При запуске открывать">
+                    <ComboBox
+                        AutomationProperties.Name="При запуске открывать"
+                        SelectedIndex="{x:Bind ViewModel.StartupIndex, Mode=TwoWay}"
+                        Style="{StaticResource SettingsComboStyle}">
+                        <ComboBoxItem Content="Главную" />
+                        <ComboBoxItem Content="Вкладки прошлого сеанса" />
+                        <ComboBoxItem Content="Этот компьютер" />
+                        <ComboBoxItem Content="Загрузки" />
+                    </ComboBox>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Папки, диски, Win+E и ярлык Проводника открываются здесь. Панель задач и «Пуск» остаются системными."
+                    Glyph="&#xEC50;"
+                    Header="Открывать папки в Nexus вместо Проводника">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Открывать папки в Nexus"
+                        IsOn="{x:Bind ViewModel.OpensFolders, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
 
+                <!--  Appearance  -->
                 <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Внешний вид" />
-                <Border Style="{StaticResource SettingsCardStyle}">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon VerticalAlignment="Center" Glyph="&#xE790;" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Тема" />
-                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Цвет акцента берётся из настроек Windows." />
-                        </StackPanel>
-                        <ComboBox
-                            Grid.Column="2"
-                            MinWidth="200"
+                <controls:SettingsCard
+                    Description="Цвет акцента берётся из настроек Windows"
+                    Glyph="&#xE790;"
+                    Header="Тема">
+                    <ComboBox
+                        AutomationProperties.Name="Тема"
+                        SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}"
+                        Style="{StaticResource SettingsComboStyle}">
+                        <ComboBoxItem Content="Как в Windows" />
+                        <ComboBoxItem Content="Светлая" />
+                        <ComboBoxItem Content="Тёмная" />
+                    </ComboBox>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Mica окрашивает окно под цвет обоев, сквозь стекло виден размытый рабочий стол и окна"
+                    Glyph="&#xE81E;"
+                    Header="Материал окна">
+                    <ComboBox
+                        AutomationProperties.Name="Материал окна"
+                        SelectedIndex="{x:Bind ViewModel.MaterialIndex, Mode=TwoWay}"
+                        Style="{StaticResource SettingsComboStyle}">
+                        <ComboBoxItem Content="Обычный, как в Проводнике" />
+                        <ComboBoxItem Content="Mica по всему окну" />
+                        <ComboBoxItem Content="Прозрачное стекло" />
+                    </ComboBox>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Насколько сквозь окно виден фон"
+                    Glyph="&#xE706;"
+                    Header="Прозрачность"
+                    Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsTransparent), Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock
+                            MinWidth="40"
                             VerticalAlignment="Center"
-                            AutomationProperties.Name="Тема"
-                            SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Как в Windows" />
-                            <ComboBoxItem Content="Светлая" />
-                            <ComboBoxItem Content="Тёмная" />
-                        </ComboBox>
-                    </Grid>
-                </Border>
+                            Style="{StaticResource NxBodySecondaryTextStyle}"
+                            Text="{x:Bind ViewModel.TransparencyText, Mode=OneWay}"
+                            TextAlignment="Right" />
+                        <Slider
+                            Width="220"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Прозрачность окна"
+                            Maximum="90"
+                            Minimum="10"
+                            StepFrequency="5"
+                            Value="{x:Bind ViewModel.Transparency, Mode=TwoWay}" />
+                    </StackPanel>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Его можно сменить и в самой папке кнопкой «Просмотреть»"
+                    Glyph="&#xE8A9;"
+                    Header="Вид папок">
+                    <ComboBox
+                        AutomationProperties.Name="Вид папок"
+                        SelectedIndex="{x:Bind ViewModel.ViewModeIndex, Mode=TwoWay}"
+                        Style="{StaticResource SettingsComboStyle}">
+                        <ComboBoxItem Content="Таблица" />
+                        <ComboBoxItem Content="Плитки" />
+                    </ComboBox>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Просмотр и свойства выбранного файла справа от списка"
+                    Glyph="&#xE946;"
+                    Header="Панель сведений">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Панель сведений"
+                        IsOn="{x:Bind ViewModel.ShowDetailsPane, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
+                <Expander AutomationProperties.Name="Разделы боковой панели" Style="{StaticResource NxSettingsExpanderStyle}">
+                    <Expander.Header>
+                        <controls:SettingsCard
+                            Description="{x:Bind ViewModel.SidebarSummary, Mode=OneWay}"
+                            Glyph="&#xE700;"
+                            Header="Разделы боковой панели"
+                            Style="{StaticResource NxSettingsExpanderHeaderStyle}" />
+                    </Expander.Header>
+                    <StackPanel>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Приложения" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Приложения в боковой панели"
+                                IsOn="{x:Bind ViewModel.SidebarApps, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Игры" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Игры в боковой панели"
+                                IsOn="{x:Bind ViewModel.SidebarGames, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="AI-центр" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="AI-центр в боковой панели"
+                                IsOn="{x:Bind ViewModel.SidebarAi, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Торренты" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Торренты в боковой панели"
+                                IsOn="{x:Bind ViewModel.SidebarTorrents, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
 
+                <!--  Files and folders  -->
                 <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Файлы и папки" />
-                <Border Style="{StaticResource SettingsCardStyle}">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon VerticalAlignment="Center" Glyph="&#xE7B3;" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Показывать скрытые элементы" />
-                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Защищённые системные файлы остаются скрытыми, как в Проводнике." />
-                        </StackPanel>
-                        <ToggleSwitch
-                            Grid.Column="2"
-                            MinWidth="0"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Показывать скрытые элементы"
-                            IsOn="{x:Bind ViewModel.ShowHiddenItems, Mode=TwoWay}"
-                            OffContent="Выкл."
-                            OnContent="Вкл." />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource SettingsCardStyle}">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon VerticalAlignment="Center" Glyph="&#xE8C1;" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Показывать расширения имён файлов" />
-                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Например, «отчёт.docx» вместо «отчёт»." />
-                        </StackPanel>
-                        <ToggleSwitch
-                            Grid.Column="2"
-                            MinWidth="0"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Показывать расширения имён файлов"
-                            IsOn="{x:Bind ViewModel.ShowFileExtensions, Mode=TwoWay}"
-                            OffContent="Выкл."
-                            OnContent="Вкл." />
-                    </Grid>
-                </Border>
+                <controls:SettingsCard
+                    Description="Защищённые системные файлы остаются скрытыми, как в Проводнике"
+                    Glyph="&#xE7B3;"
+                    Header="Показывать скрытые элементы">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Показывать скрытые элементы"
+                        IsOn="{x:Bind ViewModel.ShowHiddenItems, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Например, «отчёт.docx» вместо «отчёт»"
+                    Glyph="&#xE8C1;"
+                    Header="Показывать расширения имён файлов">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Показывать расширения имён файлов"
+                        IsOn="{x:Bind ViewModel.ShowFileExtensions, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Папки всегда идут перед файлами"
+                    Glyph="&#xE8CB;"
+                    Header="Сортировка">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ComboBox
+                            MinWidth="180"
+                            AutomationProperties.Name="Сортировать по"
+                            SelectedIndex="{x:Bind ViewModel.SortFieldIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="По имени" />
+                            <ComboBoxItem Content="По дате изменения" />
+                            <ComboBoxItem Content="По типу" />
+                            <ComboBoxItem Content="По размеру" />
+                        </ComboBox>
+                        <ComboBox
+                            MinWidth="160"
+                            AutomationProperties.Name="Порядок сортировки"
+                            SelectedIndex="{x:Bind ViewModel.SortDirectionIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="По возрастанию" />
+                            <ComboBoxItem Content="По убыванию" />
+                        </ComboBox>
+                    </StackPanel>
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Удаление в Корзину и так можно отменить: Ctrl+Z или кнопка «Отменить»"
+                    Glyph="&#xE74D;"
+                    Header="Спрашивать перед удалением в Корзину">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Спрашивать перед удалением в Корзину"
+                        IsOn="{x:Bind ViewModel.ConfirmRecycle, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
+                <controls:SettingsCard
+                    Description="Правый щелчок сразу открывает меню Windows со всеми пунктами программ; меню Nexus — с зажатым Shift"
+                    Glyph="&#xE8A7;"
+                    Header="Классическое контекстное меню">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Классическое контекстное меню"
+                        IsOn="{x:Bind ViewModel.ClassicContextMenu, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
 
+                <!--  Home  -->
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Главная" />
+                <Expander AutomationProperties.Name="Блоки на главной" Style="{StaticResource NxSettingsExpanderStyle}">
+                    <Expander.Header>
+                        <controls:SettingsCard
+                            Description="{x:Bind ViewModel.HomeSummary, Mode=OneWay}"
+                            Glyph="&#xE80F;"
+                            Header="Блоки на главной"
+                            Style="{StaticResource NxSettingsExpanderHeaderStyle}" />
+                    </Expander.Header>
+                    <StackPanel>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Продолжить играть" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Продолжить играть на главной"
+                                IsOn="{x:Bind ViewModel.HomeGames, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Недавние и избранное" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Недавние и избранное на главной"
+                                IsOn="{x:Bind ViewModel.HomeFiles, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="Накопители" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="Накопители на главной"
+                                IsOn="{x:Bind ViewModel.HomeDrives, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="AI-центр" />
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                AutomationProperties.Name="AI-центр на главной"
+                                IsOn="{x:Bind ViewModel.HomeAi, Mode=TwoWay}"
+                                Style="{StaticResource SettingsToggleStyle}" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+                <!--  Sections  -->
+                <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="Разделы" />
+                <Expander AutomationProperties.Name="Игры" Style="{StaticResource NxSettingsExpanderStyle}">
+                    <Expander.Header>
+                        <controls:SettingsCard
+                            Description="{x:Bind ViewModel.GamesSummary, Mode=OneWay}"
+                            Glyph="&#xE7FC;"
+                            Header="Игры"
+                            Style="{StaticResource NxSettingsExpanderHeaderStyle}" />
+                    </Expander.Header>
+                    <StackPanel>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.GameFolders, Mode=OneWay}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <FontIcon
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            Glyph="&#xE8B7;" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTipService.ToolTip="{x:Bind}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Click="RemoveGameFolder_Click"
+                                            Content="Убрать"
+                                            Tag="{x:Bind}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxBodySecondaryTextStyle}"
+                                Text="Папки с играми без лаунчера: портативные версии и свои установки"
+                                TextWrapping="Wrap" />
+                            <Button Grid.Column="1" Click="AddGameFolder_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                    <TextBlock Text="Добавить папку" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasHiddenGames), Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.HiddenGamesText, Mode=OneWay}" />
+                            <Button
+                                Grid.Column="1"
+                                Click="ShowHiddenGames_Click"
+                                Content="Показать все" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+                <Expander AutomationProperties.Name="AI-центр: папки поиска" Style="{StaticResource NxSettingsExpanderStyle}">
+                    <Expander.Header>
+                        <controls:SettingsCard
+                            Description="{x:Bind ViewModel.AiSummary, Mode=OneWay}"
+                            Glyph="&#xE794;"
+                            Header="AI-центр: папки поиска"
+                            Style="{StaticResource NxSettingsExpanderHeaderStyle}" />
+                    </Expander.Header>
+                    <StackPanel>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.AiFolders, Mode=OneWay}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <FontIcon
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            Glyph="&#xE8B7;" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTipService.ToolTip="{x:Bind}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Click="RemoveAiFolder_Click"
+                                            Content="Убрать"
+                                            Tag="{x:Bind}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                        <Grid Style="{StaticResource NxSettingsSubRowStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{StaticResource NxBodySecondaryTextStyle}"
+                                Text="Где ещё искать AI-проекты, скиллы и модели"
+                                TextWrapping="Wrap" />
+                            <Button Grid.Column="1" Click="AddAiFolder_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                    <TextBlock Text="Добавить папку" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+                <controls:SettingsCard
+                    Description="Служебные программы Windows в разделе «Приложения»"
+                    Glyph="&#xE71D;"
+                    Header="Показывать системные приложения">
+                    <ToggleSwitch
+                        AutomationProperties.Name="Показывать системные приложения"
+                        IsOn="{x:Bind ViewModel.ShowSystemApps, Mode=TwoWay}"
+                        Style="{StaticResource SettingsToggleStyle}" />
+                </controls:SettingsCard>
+
+                <!--  About  -->
                 <TextBlock Style="{StaticResource SettingsGroupHeaderStyle}" Text="О программе" />
-                <Border Style="{StaticResource SettingsCardStyle}">
+                <Border Padding="16,14" Style="{StaticResource NxCardStyle}">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -143,11 +463,14 @@
                             <TextBlock Text="Nexus" />
                             <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind VersionText}" />
                         </StackPanel>
-                        <Button
+                        <StackPanel
                             Grid.Column="2"
                             VerticalAlignment="Center"
-                            Click="OpenDataFolder_Click"
-                            Content="Папка настроек и журналов" />
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button Click="OpenDataFolder_Click" Content="Папка настроек и журналов" />
+                            <Button Click="Reset_Click" Content="Сбросить настройки…" />
+                        </StackPanel>
                     </Grid>
                 </Border>
             </StackPanel>

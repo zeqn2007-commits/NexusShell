@@ -123,7 +123,7 @@
                 Grid.Row="2"
                 Grid.ColumnSpan="2"
                 Spacing="12"
-                Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasRecentGames), Mode=OneWay}">
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.ShowRecentGames), Mode=OneWay}">
                 <Grid>
                     <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Продолжить играть" />
                     <HyperlinkButton
@@ -200,7 +200,10 @@
             </StackPanel>
 
             <!--  Recent / favourites  -->
-            <Grid Grid.Row="3" RowSpacing="8">
+            <Grid
+                Grid.Row="3"
+                RowSpacing="8"
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.ShowFiles)}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -339,7 +342,7 @@
                 Grid.Row="3"
                 Grid.Column="1"
                 Spacing="24">
-                <StackPanel Spacing="12">
+                <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.ShowDrives)}">
                     <Grid>
                         <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Накопители" />
                         <HyperlinkButton
@@ -407,7 +410,7 @@
                 </StackPanel>
 
                 <!--  AI summary and the newest AI files found in the user's folders  -->
-                <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasAiSummary), Mode=OneWay}">
+                <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.ShowAiSummary), Mode=OneWay}">
                     <Grid>
                         <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="AI-центр" />
                         <HyperlinkButton

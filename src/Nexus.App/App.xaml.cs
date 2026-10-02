@@ -49,7 +49,15 @@ public partial class App : Application
             options);
         _window = window;
         window.Activate();
-        window.HandleLaunch(LaunchRequest.Parse(commandLine), newTab: false);
+        var request = LaunchRequest.Parse(commandLine);
+        if (string.IsNullOrEmpty(options.Page) && request.Target == LaunchTarget.Default)
+        {
+            window.ApplyStartupPage();
+        }
+        else
+        {
+            window.HandleLaunch(request, newTab: false);
+        }
 
         // Later launches (a folder double-click, Win+E) arrive here from Program.
         Program.Redirected += (_, line) => window.DispatcherQueue.TryEnqueue(() =>

@@ -748,6 +748,14 @@ public sealed partial class FolderViewModel : ObservableObject, IDisposable
             return;
         }
 
+        if (!permanently && _settings.Current.ConfirmRecycle && !await _dialogs.ConfirmAsync(
+                "Удалить в Корзину?",
+                items.Length == 1 ? $"«{items[0].Name}» будет перемещён в Корзину." : $"В Корзину будут перемещены {Formatting.Items(items.Length)}.",
+                "Удалить"))
+        {
+            return;
+        }
+
         var paths = items.Select(item => item.Path).ToArray();
         var started = DateTimeOffset.Now;
         var outcome = permanently

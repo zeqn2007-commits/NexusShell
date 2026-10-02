@@ -2,15 +2,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Nexus.App.Services;
 using Nexus.App.Shell;
 using Nexus.App.ViewModels;
-using Nexus.Core.Shell;
+using Windows.Storage.Pickers;
 
 namespace Nexus.App.Views;
 
 public sealed partial class SettingsPage : Page, IShellPage
 {
     private readonly ShellViewModel _shell = App.Services.GetRequiredService<ShellViewModel>();
+    private readonly WindowContext _window = App.Services.GetRequiredService<WindowContext>();
 
     public SettingsPage()
     {
@@ -47,5 +49,49 @@ public sealed partial class SettingsPage : Page, IShellPage
     {
         Directory.CreateDirectory(ViewModel.DataFolder);
         _shell.Navigate(NavLocation.ForFolder(ViewModel.DataFolder));
+    }
+
+    private async void Reset_Click(object sender, RoutedEventArgs e) => await ViewModel.ResetAsync();
+
+    private async void AddGameFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (await PickFolderAsync() is { } folder)
+        {
+            ViewModel.AddGameFolder(folder);
+        }
+    }
+
+    private void RemoveGameFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string folder })
+        {
+            ViewModel.RemoveGameFolder(folder);
+        }
+    }
+
+    private void ShowHiddenGames_Click(object sender, RoutedEventArgs e) => ViewModel.ShowHiddenGames();
+
+    private async void AddAiFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (await PickFolderAsync() is { } folder)
+        {
+            ViewModel.AddAiFolder(folder);
+        }
+    }
+
+    private void RemoveAiFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string folder })
+        {
+            ViewModel.RemoveAiFolder(folder);
+        }
+    }
+
+    private async Task<string?> PickFolderAsync()
+    {
+        var picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.ComputerFolder };
+        picker.FileTypeFilter.Add("*");
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, _window.Handle);
+        return (await picker.PickSingleFolderAsync())?.Path;
     }
 }

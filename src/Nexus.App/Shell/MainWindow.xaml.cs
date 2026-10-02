@@ -27,6 +27,8 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
     private readonly ElementTheme _themeOverride;
     private readonly DispatcherQueueTimerHolder _searchDebounce;
     private bool _suppressSearchEvents;
+    private RectInt32? _normalBounds;
+    private WindowMaterial? _appliedMaterial;
 
     public MainWindow(ShellViewModel viewModel, WindowContext context, SettingsStore settings, StartupOptions options)
     {
@@ -36,7 +38,6 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         InitializeComponent();
 
         Title = "Nexus";
-        SystemBackdrop = new MicaBackdrop();
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(DragRegion);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
@@ -44,7 +45,15 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
 
         _themeOverride = options.Theme;
         ApplyTheme();
-        _settings.Changed += (_, _) => DispatcherQueue.TryEnqueue(ApplyTheme);
+        ApplyMaterial();
+        _settings.Changed += (_, _) => DispatcherQueue.TryEnqueue(() =>
+        {
+            ApplyTheme();
+            ApplyMaterial();
+            ApplySidebarSections();
+        });
+        AppWindow.Changed += AppWindow_Changed;
+        AppWindow.Closing += (_, _) => SaveSession();
 
         _searchDebounce = new DispatcherQueueTimerHolder(DispatcherQueue, TimeSpan.FromMilliseconds(220), () =>
             CurrentPage?.OnSearchTextChanged(SearchBox.Text));
@@ -58,6 +67,7 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         };
 
         BuildSidebarLocations();
+        ApplySidebarSections();
         ViewModel.LocationChanged += (_, location) => ShowLocation(location);
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
@@ -107,6 +117,97 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
                 Tag = $"folder:{drive.RootPath}",
                 Icon = new FontIcon { Glyph = drive.Glyph }
             });
+        }
+    }
+
+    /// <summary>Sections turned off in Настройки disappear from the sidebar; the header goes when all of them do.</summary>
+    private void ApplySidebarSections()
+    {
+        var hidden = _settings.Current.HiddenSidebarSections;
+        foreach (var item in Sidebar.MenuItems.OfType<NavigationViewItem>())
+        {
+            if (item.Tag is string tag && AppSettings.OptionalSidebarSections.Contains(tag))
+            {
+                item.Visibility = hidden.Contains(tag) ? Visibility.Collapsed : Visibility.Visible;
+            }
+        }
+
+        LibrariesHeader.Visibility = AppSettings.OptionalSidebarSections.All(hidden.Contains) ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>A plain launch (no folder or section asked for) opens what Настройки › Запуск says.</summary>
+    public void ApplyStartupPage()
+    {
+        switch (_settings.Current.StartupPage)
+        {
+            case StartupPage.ThisPc:
+                ViewModel.Navigate(NavLocation.FromTag("thispc"));
+                break;
+            case StartupPage.Downloads:
+                ViewModel.Navigate(NavLocation.ForFolder(KnownFolders.GetPath(KnownFolder.Downloads)));
+                break;
+            case StartupPage.LastSession:
+                RestoreSession();
+                break;
+        }
+    }
+
+    private void RestoreSession()
+    {
+        var locations = _settings.Current.LastSessionTabs.Select(SessionLocation).OfType<NavLocation>().ToArray();
+        if (locations.Length == 0)
+        {
+            return;
+        }
+
+        ViewModel.Navigate(locations[0]);
+        foreach (var location in locations.Skip(1))
+        {
+            ViewModel.OpenInNewTab(location);
+        }
+
+        ViewModel.SelectedTab = ViewModel.Tabs[Math.Clamp(_settings.Current.LastSessionSelectedTab, 0, ViewModel.Tabs.Count - 1)];
+    }
+
+    /// <summary>A saved tab; folders that are gone are skipped (network paths are kept: checking them can hang).</summary>
+    private static NavLocation? SessionLocation(string tag)
+    {
+        if (!tag.StartsWith("folder:", StringComparison.Ordinal))
+        {
+            return NavLocation.FromTag(tag);
+        }
+
+        var path = tag["folder:".Length..];
+        return path.StartsWith(@"\\", StringComparison.Ordinal) || Directory.Exists(path) ? NavLocation.ForFolder(path) : null;
+    }
+
+    private void SaveSession()
+    {
+        var tabs = ViewModel.Tabs.Select(tab => tab.Location.SessionTag).ToList();
+        var selected = ViewModel.SelectedTab is { } current ? Math.Max(0, ViewModel.Tabs.IndexOf(current)) : 0;
+        var bounds = _normalBounds ?? new RectInt32(AppWindow.Position.X, AppWindow.Position.Y, AppWindow.Size.Width, AppWindow.Size.Height);
+        var maximized = AppWindow.Presenter is OverlappedPresenter { State: OverlappedPresenterState.Maximized };
+        _settings.Update(settings =>
+        {
+            settings.LastSessionTabs = tabs;
+            settings.LastSessionSelectedTab = selected;
+            settings.Window = new WindowPlacement
+            {
+                X = bounds.X,
+                Y = bounds.Y,
+                Width = bounds.Width,
+                Height = bounds.Height,
+                IsMaximized = maximized
+            };
+        });
+    }
+
+    /// <summary>Remembers the last normal bounds, so a maximized window comes back to them when restored next time.</summary>
+    private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        if ((args.DidPositionChange || args.DidSizeChange) && sender.Presenter is OverlappedPresenter { State: OverlappedPresenterState.Restored })
+        {
+            _normalBounds = new RectInt32(sender.Position.X, sender.Position.Y, sender.Size.Width, sender.Size.Height);
         }
     }
 
@@ -489,6 +590,58 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
             };
     }
 
+    /// <summary>Window material and surface opacity from Настройки › Внешний вид; high contrast always stays solid.</summary>
+    private void ApplyMaterial()
+    {
+        var material = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast ? WindowMaterial.Standard : _settings.Current.Material;
+        var transparency = Math.Clamp(_settings.Current.Transparency, 0, 100) / 100.0;
+        if (material != _appliedMaterial)
+        {
+            SystemBackdrop = material switch
+            {
+                WindowMaterial.Mica => new TransparentBackdrop(glass: false),
+                WindowMaterial.Glass => new TransparentBackdrop(glass: true),
+                _ => new MicaBackdrop()
+            };
+            _appliedMaterial = material;
+        }
+
+        if (SystemBackdrop is TransparentBackdrop transparent)
+        {
+            transparent.Transparency = transparency;
+        }
+
+        SetSurfaceOpacity(material switch
+        {
+            WindowMaterial.Mica => 1 - transparency,
+            WindowMaterial.Glass => 0.6 * (1 - transparency),
+            _ => 1.0
+        });
+    }
+
+    /// <summary>The toolbar and workspace brushes are shared theme resources: their opacity changes every surface at once.</summary>
+    private static void SetSurfaceOpacity(double opacity)
+    {
+        foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+        {
+            foreach (var theme in new[] { "Default", "Light" })
+            {
+                if (!dictionary.ThemeDictionaries.TryGetValue(theme, out var value) || value is not ResourceDictionary themed)
+                {
+                    continue;
+                }
+
+                foreach (var key in new[] { "NxChromeBackgroundBrush", "NxWorkspaceBackgroundBrush" })
+                {
+                    if (themed.TryGetValue(key, out var brush) && brush is SolidColorBrush solid)
+                    {
+                        solid.Opacity = opacity;
+                    }
+                }
+            }
+        }
+    }
+
     // ---------- Window ----------
 
     private void ApplyWindowBounds()
@@ -498,6 +651,23 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         {
             presenter.PreferredMinimumWidth = (int)(MinimumWidth * scale);
             presenter.PreferredMinimumHeight = (int)(MinimumHeight * scale);
+        }
+
+        // The last bounds come back when their title bar is still on some screen (a monitor may be gone).
+        if (_settings.Current.Window is { Width: > 0, Height: > 0 } saved
+            && DisplayArea.GetFromRect(new RectInt32(saved.X, saved.Y, saved.Width, (int)(48 * scale)), DisplayAreaFallback.None) is not null)
+        {
+            AppWindow.MoveAndResize(new RectInt32(
+                saved.X,
+                saved.Y,
+                Math.Max(saved.Width, (int)(MinimumWidth * scale)),
+                Math.Max(saved.Height, (int)(MinimumHeight * scale))));
+            if (saved.IsMaximized && AppWindow.Presenter is OverlappedPresenter overlapped)
+            {
+                overlapped.Maximize();
+            }
+
+            return;
         }
 
         var workArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary).WorkArea;

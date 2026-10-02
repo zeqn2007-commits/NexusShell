@@ -64,6 +64,11 @@ public sealed class GameLibrary(SettingsStore settings)
         return true;
     }
 
+    public IReadOnlyList<string> Folders => settings.Current.GameFolders.ToArray();
+
+    public void RemoveFolder(string folder) =>
+        settings.Update(current => current.GameFolders.RemoveAll(entry => PathHelper.AreEqual(entry, folder)));
+
     /// <summary>Starts the game through its launcher (Steam, Epic, Xbox) or its own executable.</summary>
     public static void Launch(GameEntry game)
     {

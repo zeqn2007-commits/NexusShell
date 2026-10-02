@@ -86,6 +86,9 @@ public sealed record NavLocation(PageKind Kind, string Title, string Glyph, stri
         _ => Home
     };
 
+    /// <summary>How the tab is saved for "Вкладки прошлого сеанса"; <see cref="FromTag"/> turns it back into a location.</summary>
+    public string SessionTag => Kind == PageKind.Folder && Path is not null ? $"folder:{Path}" : SidebarTag;
+
     /// <summary>Tag of the sidebar item that represents this location, if any.</summary>
     public string SidebarTag => Kind switch
     {

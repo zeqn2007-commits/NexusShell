@@ -43,6 +43,7 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public ObservableCollection<GameItem> RecentGames { get; } = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRecentGames))]
     public partial bool HasRecentGames { get; private set; }
 
     /// <summary>AI summary: "11 скиллов · 3 MCP-сервера", and the newest AI files found in the user's folders.</summary>
@@ -53,7 +54,17 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public partial IReadOnlyList<AiFileItem> NewAiFiles { get; private set; } = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowAiSummary))]
     public partial bool HasAiSummary { get; private set; }
+
+    /// <summary>Blocks turned off in Настройки › Главная are neither shown nor loaded.</summary>
+    public bool ShowRecentGames => HasRecentGames && IsShown("games");
+
+    public bool ShowFiles => IsShown("files");
+
+    public bool ShowDrives => IsShown("drives");
+
+    public bool ShowAiSummary => HasAiSummary && IsShown("ai");
 
     [ObservableProperty]
     public partial bool HasNewAiFiles { get; private set; }
@@ -83,8 +94,14 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public async Task LoadAsync()
     {
         LoadQuickAccess();
-        await Task.WhenAll(LoadDrivesAsync(), LoadFileListAsync(), LoadRecentGamesAsync(), LoadAiSummaryAsync());
+        await Task.WhenAll(
+            ShowDrives ? LoadDrivesAsync() : Task.CompletedTask,
+            ShowFiles ? LoadFileListAsync() : Task.CompletedTask,
+            IsShown("games") ? LoadRecentGamesAsync() : Task.CompletedTask,
+            IsShown("ai") ? LoadAiSummaryAsync() : Task.CompletedTask);
     }
+
+    private bool IsShown(string section) => !settings.Current.HiddenHomeSections.Contains(section);
 
     public Task ShowRecentAsync()
     {

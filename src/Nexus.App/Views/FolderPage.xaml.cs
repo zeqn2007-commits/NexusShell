@@ -32,6 +32,7 @@ public sealed partial class FolderPage : Page, IShellPage, INotifyPropertyChange
     private readonly PreviewService _previews = App.Services.GetRequiredService<PreviewService>();
     private readonly WindowContext _window = App.Services.GetRequiredService<WindowContext>();
     private readonly ClassicMenuService _classicMenu = App.Services.GetRequiredService<ClassicMenuService>();
+    private readonly SettingsStore _settings = App.Services.GetRequiredService<SettingsStore>();
     private IReadOnlyList<string>? _dragPaths;
     private CancellationTokenSource? _previewCancellation;
     private FilePreview? _preview;
@@ -456,8 +457,9 @@ public sealed partial class FolderPage : Page, IShellPage, INotifyPropertyChange
         _menuPoint = pointer ? WindowContext.CursorPosition : MenuAnchor(list, item);
         e.Handled = true;
 
-        // Shift+right click and Shift+F10 go straight to the classic Windows menu, as in Explorer.
-        if (IsDown(VirtualKey.Shift))
+        // Shift+right click and Shift+F10 go straight to the classic Windows menu, as in Explorer;
+        // with "Классическое контекстное меню" turned on it is the other way round.
+        if (IsDown(VirtualKey.Shift) != _settings.Current.ClassicContextMenu)
         {
             DispatcherQueue.TryEnqueue(() => ShowClassicMenu(background: item is null));
             return;

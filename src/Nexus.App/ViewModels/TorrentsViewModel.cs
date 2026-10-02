@@ -9,6 +9,7 @@ using Nexus.App.Services;
 using Nexus.App.Shell;
 using Nexus.Core.IO;
 using Nexus.Core.Operations;
+using Nexus.Core.Settings;
 using Nexus.Core.Shell;
 using Nexus.Core.Torrents;
 
@@ -22,7 +23,9 @@ public sealed partial class TorrentsViewModel(
     FileOperationService operations,
     UndoHistory undo,
     ShellViewModel shell,
-    WindowContext window) : ObservableObject
+    WindowContext window,
+    SettingsStore settings,
+    DialogService dialogs) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DownloadsCount), nameof(DownloadsCaption), nameof(CompletedCount), nameof(CompletedCaption),
@@ -177,6 +180,16 @@ public sealed partial class TorrentsViewModel(
     {
         var paths = items.Select(item => item.File.Path).ToArray();
         if (paths.Length == 0)
+        {
+            return;
+        }
+
+        if (settings.Current.ConfirmRecycle && !await dialogs.ConfirmAsync(
+                "Удалить в Корзину?",
+                paths.Length == 1
+                    ? $"«{items[0].FileName}» будет перемещён в Корзину."
+                    : $"В Корзину будут перемещены {Formatting.Count(paths.Length, "торрент-файл", "торрент-файла", "торрент-файлов")}.",
+                "Удалить"))
         {
             return;
         }
