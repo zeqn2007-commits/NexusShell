@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 using Nexus.App.Models;
 using Nexus.App.Shell;
+using Nexus.Core.Ai;
 using Nexus.Core.Games;
 using Nexus.Core.IO;
 using Nexus.Core.Settings;
@@ -29,7 +30,7 @@ public sealed partial class QuickAccessItem(string title, string path, string su
     public bool HasIcon => Icon is not null;
 }
 
-public sealed partial class HomeViewModel(SettingsStore settings, RecentItems recent, GameLibrary games) : ObservableObject
+public sealed partial class HomeViewModel(SettingsStore settings, RecentItems recent, GameLibrary games, AiWorkspace ai) : ObservableObject
 {
     private static readonly CultureInfo Russian = CultureInfo.GetCultureInfo("ru-RU");
     private bool _showingFavorites;
@@ -43,6 +44,19 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
 
     [ObservableProperty]
     public partial bool HasRecentGames { get; private set; }
+
+    /// <summary>AI summary: "11 скиллов · 3 MCP-сервера", and the newest AI files found in the user's folders.</summary>
+    [ObservableProperty]
+    public partial string AiSummary { get; private set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial IReadOnlyList<AiFileItem> NewAiFiles { get; private set; } = [];
+
+    [ObservableProperty]
+    public partial bool HasAiSummary { get; private set; }
+
+    [ObservableProperty]
+    public partial bool HasNewAiFiles { get; private set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFileListEmpty))]
@@ -69,7 +83,7 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
     public async Task LoadAsync()
     {
         LoadQuickAccess();
-        await Task.WhenAll(LoadDrivesAsync(), LoadFileListAsync(), LoadRecentGamesAsync());
+        await Task.WhenAll(LoadDrivesAsync(), LoadFileListAsync(), LoadRecentGamesAsync(), LoadAiSummaryAsync());
     }
 
     public Task ShowRecentAsync()
@@ -116,6 +130,36 @@ public sealed partial class HomeViewModel(SettingsStore settings, RecentItems re
         {
             Drives.Add(DriveItem.FromEntry(drive));
         }
+    }
+
+    private async Task LoadAiSummaryAsync()
+    {
+        var snapshot = await ai.GetAsync();
+        var parts = new List<string>();
+        if (snapshot.Models.Count > 0)
+        {
+            parts.Add(Formatting.Count(snapshot.Models.Count, "модель", "модели", "моделей"));
+        }
+
+        if (snapshot.Skills.Count > 0)
+        {
+            parts.Add(Formatting.Count(snapshot.Skills.Count, "скилл", "скилла", "скиллов"));
+        }
+
+        if (snapshot.McpServers.Count > 0)
+        {
+            parts.Add(Formatting.Count(snapshot.McpServers.Count, "MCP-сервер", "MCP-сервера", "MCP-серверов"));
+        }
+
+        if (snapshot.Projects.Count > 0)
+        {
+            parts.Add(Formatting.Count(snapshot.Projects.Count, "проект", "проекта", "проектов"));
+        }
+
+        AiSummary = string.Join(" · ", parts);
+        NewAiFiles = snapshot.Files.Take(3).Select(file => new AiFileItem(file)).ToArray();
+        HasNewAiFiles = NewAiFiles.Count > 0;
+        HasAiSummary = parts.Count > 0 || HasNewAiFiles;
     }
 
     private async Task LoadRecentGamesAsync()

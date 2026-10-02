@@ -14,6 +14,16 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Background" Value="{ThemeResource NxAccentSoftBrush}" />
         </Style>
+        <Style x:Key="ChipStyle" TargetType="Border">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style x:Key="EmptyTextStyle" TargetType="TextBlock" BasedOn="{StaticResource NxBodySecondaryTextStyle}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Page.Resources>
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
@@ -25,20 +35,27 @@
             <Grid>
                 <StackPanel Spacing="2">
                     <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="AI-центр" />
-                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Локальные модели, проекты с агентами и подключения MCP на этом компьютере" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Локальные модели, скиллы, проекты с агентами и подключения MCP на этом компьютере" />
                 </StackPanel>
                 <StackPanel
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="8">
-                    <Button>
+                    <ProgressRing
+                        Width="20"
+                        Height="20"
+                        IsActive="{x:Bind ViewModel.IsScanning, Mode=OneWay}" />
+                    <Button ToolTipService.ToolTip="Где ещё искать AI-проекты и AI-файлы">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="16" Glyph="&#xE8F4;" />
                             <TextBlock Text="Папки поиска" />
                         </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout x:Name="FoldersMenu" Opening="FoldersMenu_Opening" Placement="BottomEdgeAlignedRight" />
+                        </Button.Flyout>
                     </Button>
-                    <Button Style="{StaticResource AccentButtonStyle}">
+                    <Button Click="Scan_Click" Style="{StaticResource AccentButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="16" Glyph="&#xE72C;" />
                             <TextBlock Text="Сканировать" />
@@ -61,50 +78,124 @@
                             <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xF158;" />
                         </Border>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.ModelsCount}" />
-                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ModelsCaption}" />
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.ModelsCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.ModelsCaption, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="1" Style="{StaticResource NxCardStyle}">
                     <StackPanel Spacing="10">
                         <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
-                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE794;" />
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xEA86;" />
                         </Border>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.ProjectsCount}" />
-                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="AI-проектов" />
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.SkillsCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.SkillsCaption, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="2" Style="{StaticResource NxCardStyle}">
                     <StackPanel Spacing="10">
                         <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
-                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xEBD2;" />
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE794;" />
                         </Border>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.McpCount}" />
-                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="MCP-сервера" />
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.ProjectsCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.ProjectsCaption, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="3" Style="{StaticResource NxCardStyle}">
                     <StackPanel Spacing="10">
                         <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
-                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xEA86;" />
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xEBD2;" />
                         </Border>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.SkillsCount}" />
-                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Skills" />
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.McpCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.McpCaption, Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>
 
+            <!--  Smart section: AI files wherever they landed  -->
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Найдено в ваших папках" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.FilesCaption, Mode=OneWay}" />
+                </StackPanel>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:AiFileItem">
+                            <Border Padding="16,10" Style="{StaticResource NxCardStyle}">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource IconTileStyle}">
+                                        <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="{x:Bind Glyph}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Name}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Details}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Location}" />
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Click="InstallSkill_Click"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Скопировать скилл в Claude Code (~\.claude\skills)"
+                                        Visibility="{x:Bind ui:Ui.Visible(IsSkill)}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon FontSize="14" Glyph="&#xE896;" />
+                                            <TextBlock Text="Установить" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Click="OpenFile_Click"
+                                        Content="Открыть"
+                                        Tag="{x:Bind}"
+                                        Visibility="{x:Bind ui:Ui.Collapsed(IsSkill)}" />
+                                    <Button
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Другие действия"
+                                        Style="{StaticResource NxSubtleButtonStyle}"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Другие действия">
+                                        <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                        <Button.Flyout>
+                                            <MenuFlyout Opening="FileMenu_Opening" Placement="BottomEdgeAlignedRight" />
+                                        </Button.Flyout>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Пока ничего: как только скачаете скилл, модель или MCP-конфиг, он появится здесь — где бы ни лежал."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasFiles), Mode=OneWay}" />
+            </StackPanel>
+
             <!--  Models  -->
             <StackPanel Spacing="12">
                 <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Локальные модели" />
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Models}">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <StackLayout Spacing="4" />
                     </ItemsRepeater.Layout>
@@ -140,7 +231,9 @@
                                     <Button
                                         Grid.Column="3"
                                         AutomationProperties.Name="Открыть папку модели"
+                                        Click="OpenModelFolder_Click"
                                         Style="{StaticResource NxSubtleButtonStyle}"
+                                        Tag="{x:Bind}"
                                         ToolTipService.ToolTip="Открыть папку модели">
                                         <FontIcon FontSize="16" Glyph="&#xE838;" />
                                     </Button>
@@ -149,12 +242,91 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Моделей Ollama и LM Studio на этом компьютере нет. Скачанные модели (.gguf, .safetensors) появятся в разделе выше."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasModels), Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  Skills  -->
+            <StackPanel Spacing="12">
+                <Grid>
+                    <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Скиллы" />
+                    <HyperlinkButton
+                        HorizontalAlignment="Right"
+                        Click="ToggleSkills_Click"
+                        Content="{x:Bind ViewModel.SkillsToggleText, Mode=OneWay}"
+                        Style="{StaticResource NxLinkButtonStyle}"
+                        Visibility="{x:Bind ui:Ui.Visible(ViewModel.CanToggleSkills), Mode=OneWay}" />
+                </Grid>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Skills, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="12"
+                            MinItemHeight="112"
+                            MinItemWidth="300"
+                            MinRowSpacing="12" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:AiSkillItem">
+                            <Button
+                                Padding="16,14"
+                                AutomationProperties.Name="{x:Bind Name}"
+                                Click="Skill_Click"
+                                Style="{StaticResource NxCardButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="{x:Bind Description}">
+                                <Grid RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="32"
+                                            Height="32"
+                                            Style="{StaticResource IconTileStyle}">
+                                            <FontIcon
+                                                FontSize="16"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                Glyph="&#xEA86;" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource NxItemTitleTextStyle}"
+                                                Text="{x:Bind Name}" />
+                                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Source}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        MaxLines="2"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Description}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Скиллов Claude Code и Codex не найдено."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasSkills), Mode=OneWay}" />
             </StackPanel>
 
             <!--  Projects  -->
             <StackPanel Spacing="12">
                 <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="AI-проекты" />
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Projects}">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Projects, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
                             ItemsStretch="Fill"
@@ -168,7 +340,10 @@
                             <Button
                                 Padding="16,14"
                                 AutomationProperties.Name="{x:Bind Name}"
-                                Style="{StaticResource NxCardButtonStyle}">
+                                Click="Project_Click"
+                                Style="{StaticResource NxCardButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="{x:Bind Path}">
                                 <Grid RowSpacing="10">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -203,12 +378,7 @@
                                         </ItemsRepeater.Layout>
                                         <ItemsRepeater.ItemTemplate>
                                             <DataTemplate x:DataType="x:String">
-                                                <Border
-                                                    Padding="8,2"
-                                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="4">
+                                                <Border Style="{StaticResource ChipStyle}">
                                                     <TextBlock FontSize="12" Text="{x:Bind}" />
                                                 </Border>
                                             </DataTemplate>
@@ -230,13 +400,20 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Проектов с агентами пока нет. Добавьте папку с проектами через «Папки поиска»."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasProjects), Mode=OneWay}" />
             </StackPanel>
 
             <!--  MCP  -->
             <StackPanel Spacing="12">
                 <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="MCP-серверы" />
-                <Border Padding="0,4" Style="{StaticResource NxCardStyle}">
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.McpServers}">
+                <Border
+                    Padding="0,4"
+                    Style="{StaticResource NxCardStyle}"
+                    Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasMcp), Mode=OneWay}">
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.McpServers, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="models:McpServerItem">
                                 <Grid
@@ -254,7 +431,10 @@
                                         Glyph="&#xEBD2;" />
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock FontWeight="SemiBold" Text="{x:Bind Name}" />
-                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Command}" />
+                                        <TextBlock
+                                            Style="{StaticResource NxSecondaryTextStyle}"
+                                            Text="{x:Bind Command}"
+                                            ToolTipService.ToolTip="{x:Bind Command}" />
                                     </StackPanel>
                                     <Border
                                         Grid.Column="2"
@@ -272,6 +452,10 @@
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
                 </Border>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="MCP-серверов не настроено ни в одном AI-клиенте."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasMcp), Mode=OneWay}" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

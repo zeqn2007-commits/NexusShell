@@ -191,6 +191,10 @@ public sealed partial class HomePage : Page, IShellPage
 
     private void AllGames_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("games"));
 
+    private void AiCenter_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("ai"));
+
+    private void AiFile_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("ai"));
+
     private void Game_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { Tag: GameItem { Entry: { } entry } game })

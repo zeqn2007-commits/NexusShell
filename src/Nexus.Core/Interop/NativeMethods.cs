@@ -89,6 +89,9 @@ internal static class NativeMethods
     [DllImport("kernel32.dll")]
     public static extern IntPtr GetProcAddress(IntPtr module, IntPtr ordinal);
 
+    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
+    public static extern int AssocQueryStringW(int flags, int what, string association, string? extra, [Out] char[]? output, ref uint length);
+
     [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
     public static extern int NetShareEnum(string serverName, int level, out IntPtr buffer, int preferredMaximumLength, out int entriesRead, out int totalEntries, IntPtr resumeHandle);
 

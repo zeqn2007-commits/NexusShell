@@ -1,4 +1,5 @@
 using System.Globalization;
+using Nexus.Core.IO;
 
 namespace Nexus.App.Models;
 
@@ -47,11 +48,15 @@ public static class Formatting
         return local.ToString(local.Year == today.Year ? "d MMMM, HH:mm" : "d MMMM yyyy", Russian);
     }
 
-    public static string Count(int count, string one, string few, string many)
+    public static string Count(int count, string one, string few, string many) =>
+        $"{count.ToString("N0", Russian)} {Word(count, one, few, many)}";
+
+    /// <summary>The Russian plural form for a number: 1 модель, 3 модели, 5 моделей.</summary>
+    public static string Word(int count, string one, string few, string many)
     {
         var mod100 = count % 100;
         var mod10 = count % 10;
-        var word = mod100 is >= 11 and <= 14
+        return mod100 is >= 11 and <= 14
             ? many
             : mod10 switch
             {
@@ -59,8 +64,28 @@ public static class Formatting
                 >= 2 and <= 4 => few,
                 _ => many
             };
-        return $"{count.ToString("N0", Russian)} {word}";
     }
 
     public static string Items(int count) => Count(count, "элемент", "элемента", "элементов");
+
+    /// <summary>"Загрузки › skills": where a folder is, in the words of the sidebar.</summary>
+    public static string Location(string folder)
+    {
+        var known = KnownFolders.Find(folder) ?? KnownFolders.UserFolders.FirstOrDefault(entry =>
+            entry.Folder != KnownFolder.Profile && PathHelper.IsInside(folder, entry.Path));
+        if (known is null)
+        {
+            return Compact(folder);
+        }
+
+        var relative = Path.GetRelativePath(known.Path, folder);
+        return relative == "." ? known.Title : $"{known.Title} › {relative.Replace("\\", " › ", StringComparison.Ordinal)}";
+    }
+
+    /// <summary>"C:\…\torrents\Фильмы": a deep local path shortened to its drive and last two folders.</summary>
+    private static string Compact(string folder)
+    {
+        var parts = folder.TrimEnd('\\').Split('\\');
+        return parts.Length > 4 && parts[0].EndsWith(':') ? $"{parts[0]}\\…\\{parts[^2]}\\{parts[^1]}" : folder;
+    }
 }

@@ -1,0 +1,302 @@
+<Page
+    x:Class="Nexus.App.Views.TorrentsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:Nexus.App.Models"
+    xmlns:ui="using:Nexus.App.Converters"
+    Background="Transparent">
+
+    <Page.Resources>
+        <Style x:Key="StatValueStyle" TargetType="TextBlock" BasedOn="{StaticResource TitleTextBlockStyle}" />
+        <Style x:Key="IconTileStyle" TargetType="Border">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="{ThemeResource NxAccentSoftBrush}" />
+        </Style>
+        <Style x:Key="EmptyTextStyle" TargetType="TextBlock" BasedOn="{StaticResource NxBodySecondaryTextStyle}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            MaxWidth="1480"
+            Padding="{StaticResource NxPagePadding}"
+            Spacing="28">
+
+            <Grid>
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="Торренты" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Загрузки торрент-клиентов и торрент-файлы в ваших папках" />
+                </StackPanel>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ProgressRing
+                        Width="20"
+                        Height="20"
+                        IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                    <Button Click="Refresh_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                            <TextBlock Text="Обновить" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Click="OpenClient_Click"
+                        ToolTipService.ToolTip="Торрент-клиент по умолчанию"
+                        Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasClient), Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind ViewModel.ClientIcon, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.OpenClientText, Mode=OneWay}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!--  Summary  -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE896;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.DownloadsCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.DownloadsCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE916;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.ActiveCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.ActiveCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE73E;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.CompletedCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.CompletedCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE8A5;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.FilesCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.FilesCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!--  Downloads  -->
+            <StackPanel Spacing="12">
+                <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Загрузки" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Downloads, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:TorrentDownloadItem">
+                            <Border Padding="16,10" Style="{StaticResource NxCardStyle}">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource IconTileStyle}">
+                                        <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="{x:Bind Glyph}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Name}"
+                                            ToolTipService.ToolTip="{x:Bind Name}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Details}" />
+                                        <ProgressBar
+                                            Margin="0,8,0,2"
+                                            HorizontalAlignment="Stretch"
+                                            Maximum="100"
+                                            Visibility="{x:Bind ui:Ui.Visible(IsDownloading)}"
+                                            Value="{x:Bind Percent}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="6">
+                                        <Ellipse
+                                            Width="8"
+                                            Height="8"
+                                            Fill="{ThemeResource NxSuccessBrush}"
+                                            Visibility="{x:Bind ui:Ui.Visible(ShowDoneMark)}" />
+                                        <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind Status}" />
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        Click="OpenDownload_Click"
+                                        Content="Открыть"
+                                        IsEnabled="{x:Bind CanOpen}"
+                                        Tag="{x:Bind}" />
+                                    <Button
+                                        Grid.Column="4"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Другие действия"
+                                        IsEnabled="{x:Bind CanOpen}"
+                                        Style="{StaticResource NxSubtleButtonStyle}"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Другие действия">
+                                        <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                        <Button.Flyout>
+                                            <MenuFlyout Opening="DownloadMenu_Opening" Placement="BottomEdgeAlignedRight" />
+                                        </Button.Flyout>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Загрузок нет. Здесь появятся торренты из BitTorrent, µTorrent, qBittorrent, Transmission и Deluge."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasDownloads), Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  .torrent files  -->
+            <StackPanel Spacing="12">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Торрент-файлы" />
+                        <TextBlock
+                            Style="{StaticResource NxBodySecondaryTextStyle}"
+                            Text="В «Загрузках» и на рабочем столе. Уже добавленные в клиент можно удалить: у клиента есть своя копия."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <HyperlinkButton
+                        Grid.Column="1"
+                        VerticalAlignment="Bottom"
+                        Click="Cleanup_Click"
+                        Content="{x:Bind ViewModel.CleanupText, Mode=OneWay}"
+                        Style="{StaticResource NxLinkButtonStyle}"
+                        ToolTipService.ToolTip="Переместить в Корзину торрент-файлы, которые уже есть в клиенте"
+                        Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasAddedFiles), Mode=OneWay}" />
+                </Grid>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:TorrentFileItem">
+                            <Border Padding="16,10" Style="{StaticResource NxCardStyle}">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource IconTileStyle}">
+                                        <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE896;" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                            Text="{x:Bind Name}"
+                                            ToolTipService.ToolTip="{x:Bind FileName}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Details}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Location}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="6"
+                                        Visibility="{x:Bind ui:Ui.Visible(IsAdded)}">
+                                        <Ellipse
+                                            Width="8"
+                                            Height="8"
+                                            Fill="{ThemeResource NxSuccessBrush}" />
+                                        <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind AddedText}" />
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        Click="OpenTorrent_Click"
+                                        Content="{x:Bind OpenText}"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Добавить в торрент-клиент"
+                                        Visibility="{x:Bind ui:Ui.Visible(IsNew)}" />
+                                    <Button
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        Click="DeleteTorrent_Click"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Переместить торрент-файл в Корзину"
+                                        Visibility="{x:Bind ui:Ui.Visible(IsAdded)}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                            <TextBlock Text="Удалить" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        Grid.Column="4"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Другие действия"
+                                        Style="{StaticResource NxSubtleButtonStyle}"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="Другие действия">
+                                        <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                        <Button.Flyout>
+                                            <MenuFlyout Opening="TorrentMenu_Opening" Placement="BottomEdgeAlignedRight" />
+                                        </Button.Flyout>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="Торрент-файлов в «Загрузках» и на рабочем столе нет."
+                    Visibility="{x:Bind ui:Ui.Collapsed(ViewModel.HasFiles), Mode=OneWay}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

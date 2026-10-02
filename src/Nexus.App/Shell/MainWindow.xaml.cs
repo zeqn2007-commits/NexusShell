@@ -121,6 +121,7 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
             PageKind.Apps => typeof(AppsPage),
             PageKind.Games => typeof(GamesPage),
             PageKind.AiCenter => typeof(AiCenterPage),
+            PageKind.Torrents => typeof(TorrentsPage),
             PageKind.Settings => typeof(SettingsPage),
             _ => typeof(FolderPage)
         };

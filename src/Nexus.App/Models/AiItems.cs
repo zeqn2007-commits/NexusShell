@@ -1,45 +1,82 @@
+using Nexus.Core.Ai;
+using Nexus.Core.IO;
+
 namespace Nexus.App.Models;
 
-public sealed class AiModelItem
+public sealed class AiModelItem(AiModel model)
 {
-    public required string Name { get; init; }
+    public AiModel Model { get; } = model;
 
-    public required string Runtime { get; init; }
+    public string Name => Model.Name;
 
-    public long SizeBytes { get; init; }
-
-    public string? Quantization { get; init; }
-
-    public string? Parameters { get; init; }
-
-    public bool IsLoaded { get; init; }
-
-    public string Details => string.Join(" · ", new[] { Runtime, Parameters, Quantization, Formatting.Size(SizeBytes) }
+    public string Details => string.Join(" · ", new[] { Model.Runtime, Model.Parameters, Model.Quantization, Formatting.Size(Model.SizeBytes) }
         .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+    public bool IsLoaded => Model.IsLoaded;
 
     public string Status => IsLoaded ? "Загружена" : "Готова";
 }
 
-public sealed class AiProjectItem
+public sealed class AiProjectItem(AiProject project)
 {
-    public required string Name { get; init; }
+    public AiProject Project { get; } = project;
 
-    public required string Path { get; init; }
+    public string Name => Project.Name;
 
-    public required string Kind { get; init; }
+    public string Path => Project.Path;
 
-    public DateTimeOffset Modified { get; init; }
+    public string Kind => Project.Kind;
 
-    public IReadOnlyList<string> Signals { get; init; } = [];
+    public IReadOnlyList<string> Signals => Project.Signals;
 
-    public string RelativeModified => Formatting.RelativeDate(Modified, DateTimeOffset.Now);
+    public string RelativeModified => Formatting.RelativeDate(Project.Modified, DateTimeOffset.Now);
 }
 
-public sealed class McpServerItem
+public sealed class McpServerItem(McpServer server)
 {
-    public required string Name { get; init; }
+    public McpServer Server { get; } = server;
 
-    public required string Client { get; init; }
+    public string Name => Server.Name;
 
-    public required string Command { get; init; }
+    public string Client => Server.Client;
+
+    public string Command => Server.Command;
+}
+
+public sealed class AiSkillItem(AiSkill skill)
+{
+    public AiSkill Skill { get; } = skill;
+
+    public string Name => Skill.Name;
+
+    public string Description => string.IsNullOrWhiteSpace(Skill.Description) ? "Без описания" : Skill.Description;
+
+    public string Source => Skill.Source;
+}
+
+/// <summary>An item of the smart section: an AI file found in Downloads, on the desktop or in Documents.</summary>
+public sealed class AiFileItem(AiFile file)
+{
+    public AiFile File { get; } = file;
+
+    public string Name => File.Name;
+
+    public string KindTitle => File.KindTitle;
+
+    public bool IsSkill => File.Kind == AiFileKind.Skill;
+
+    public string Glyph => File.Kind switch
+    {
+        AiFileKind.Skill => "",
+        AiFileKind.Model => "",
+        AiFileKind.McpConfig => "",
+        _ => ""
+    };
+
+    /// <summary>"Загрузки › skills" — where it lies, in the words of the sidebar.</summary>
+    public string Location => Formatting.Location(PathHelper.GetParent(File.Path) ?? File.Path);
+
+    public string Details => File.IsFolder
+        ? $"{KindTitle} · {Formatting.RelativeDate(File.Modified, DateTimeOffset.Now)}"
+        : $"{KindTitle} · {Formatting.Size(File.Size)} · {Formatting.RelativeDate(File.Modified, DateTimeOffset.Now)}";
 }

@@ -405,6 +405,81 @@
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
                 </StackPanel>
+
+                <!--  AI summary and the newest AI files found in the user's folders  -->
+                <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasAiSummary), Mode=OneWay}">
+                    <Grid>
+                        <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="AI-центр" />
+                        <HyperlinkButton
+                            HorizontalAlignment="Right"
+                            Click="AiCenter_Click"
+                            Content="Открыть"
+                            Style="{StaticResource NxLinkButtonStyle}" />
+                    </Grid>
+                    <Border Padding="0" Style="{StaticResource NxCardStyle}">
+                        <StackPanel>
+                            <Grid Padding="14,12" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border
+                                    Width="36"
+                                    Height="36"
+                                    Background="{ThemeResource NxAccentSoftBrush}"
+                                    CornerRadius="8">
+                                    <FontIcon
+                                        FontSize="16"
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        Glyph="&#xE794;" />
+                                </Border>
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind ViewModel.AiSummary, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                            <StackPanel Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasNewAiFiles), Mode=OneWay}">
+                                <Rectangle Style="{StaticResource NxDividerStyle}" />
+                                <TextBlock
+                                    Margin="14,10,14,4"
+                                    Style="{StaticResource NxSecondaryTextStyle}"
+                                    Text="Новое в ваших папках" />
+                                <ItemsRepeater Margin="0,0,0,6" ItemsSource="{x:Bind ViewModel.NewAiFiles, Mode=OneWay}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="models:AiFileItem">
+                                            <Button
+                                                Height="48"
+                                                Padding="14,0"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                AutomationProperties.Name="{x:Bind Name}"
+                                                Click="AiFile_Click"
+                                                CornerRadius="0"
+                                                Style="{StaticResource NxSubtleButtonStyle}"
+                                                Tag="{x:Bind}">
+                                                <Grid ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon
+                                                        FontSize="16"
+                                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                        Glyph="{x:Bind Glyph}" />
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Style="{StaticResource NxItemTitleTextStyle}" Text="{x:Bind Name}" />
+                                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind KindTitle}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </ScrollViewer>

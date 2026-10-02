@@ -720,7 +720,7 @@ public sealed partial class FolderViewModel : ObservableObject, IDisposable
         if (outcome.CreatedPaths.Count > 0)
         {
             _undo.Record(move
-                ? new MovedAction(MapMoves(sources, outcome.CreatedPaths), started)
+                ? MovedAction.FromOutcome(sources, outcome.CreatedPaths, started)
                 : new CopiedAction(outcome.CreatedPaths, started));
         }
 
@@ -738,22 +738,6 @@ public sealed partial class FolderViewModel : ObservableObject, IDisposable
         {
             await ReloadAsync(select: outcome.CreatedPaths);
         }
-    }
-
-    private static IReadOnlyList<(string From, string To)> MapMoves(IReadOnlyList<string> sources, IReadOnlyList<string> created)
-    {
-        var moves = new List<(string, string)>();
-        foreach (var source in sources)
-        {
-            var name = Path.GetFileName(source.TrimEnd('\\'));
-            var target = created.FirstOrDefault(path => string.Equals(Path.GetFileName(path), name, StringComparison.OrdinalIgnoreCase));
-            if (target is not null)
-            {
-                moves.Add((source, target));
-            }
-        }
-
-        return moves;
     }
 
     public async Task DeleteAsync(bool permanently)

@@ -16,7 +16,24 @@ public sealed record CopiedAction(IReadOnlyList<string> CreatedPaths, DateTimeOf
     : UndoableAction($"Копирование ({CreatedPaths.Count})", At);
 
 public sealed record MovedAction(IReadOnlyList<(string From, string To)> Moves, DateTimeOffset At)
-    : UndoableAction($"Перемещение ({Moves.Count})", At);
+    : UndoableAction($"Перемещение ({Moves.Count})", At)
+{
+    /// <summary>A move of <paramref name="sources"/>, paired with the items the operation created for them.</summary>
+    public static MovedAction FromOutcome(IReadOnlyList<string> sources, IReadOnlyList<string> created, DateTimeOffset at)
+    {
+        var moves = new List<(string, string)>();
+        foreach (var source in sources)
+        {
+            var name = Path.GetFileName(source.TrimEnd('\\'));
+            if (created.FirstOrDefault(path => string.Equals(Path.GetFileName(path), name, StringComparison.OrdinalIgnoreCase)) is { } target)
+            {
+                moves.Add((source, target));
+            }
+        }
+
+        return new MovedAction(moves, at);
+    }
+}
 
 public sealed record RecycledAction(IReadOnlyList<string> OriginalPaths, DateTimeOffset At)
     : UndoableAction($"Удаление в Корзину ({OriginalPaths.Count})", At);
