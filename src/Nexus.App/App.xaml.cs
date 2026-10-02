@@ -126,6 +126,7 @@ public partial class App : Application
         services.AddTransient<GamesViewModel>();
         services.AddTransient<AiCenterViewModel>();
         services.AddTransient<TorrentsViewModel>();
+        services.AddTransient<OrganizerViewModel>();
         services.AddTransient<SettingsViewModel>();
         return services.BuildServiceProvider();
     }

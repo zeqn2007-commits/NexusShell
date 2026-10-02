@@ -213,6 +213,7 @@
                                 Orientation="Horizontal"
                                 Spacing="8">
                                 <Button
+                                    AutomationProperties.Name="Играть"
                                     MinWidth="140"
                                     Click="PlayFeatured_Click"
                                     IsEnabled="{x:Bind ViewModel.Featured.CanLaunch, Mode=OneWay, FallbackValue=False}"
@@ -358,6 +359,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Button
+                                AutomationProperties.Name="Играть"
                                 HorizontalAlignment="Stretch"
                                 Click="PlaySelected_Click"
                                 IsEnabled="{x:Bind ViewModel.SelectedGame.CanLaunch, Mode=OneWay, FallbackValue=False}"

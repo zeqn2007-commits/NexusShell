@@ -12,6 +12,7 @@ public enum PageKind
     Games,
     AiCenter,
     Torrents,
+    Organizer,
     RecycleBin,
     Settings
 }
@@ -80,6 +81,7 @@ public sealed record NavLocation(PageKind Kind, string Title, string Glyph, stri
         "games" => new(PageKind.Games, "Игры", "\uE7FC"),
         "ai" => new(PageKind.AiCenter, "AI-центр", "\uE794"),
         "torrents" => new(PageKind.Torrents, "Торренты", "\uE8F7"),
+        "organize" => new(PageKind.Organizer, "Разбор загрузок", "\uE8F1"),
         "recycle" => new(PageKind.RecycleBin, "Корзина", "\uE74D"),
         "settings" => new(PageKind.Settings, "Настройки", "\uE713"),
         _ when tag.StartsWith("folder:", StringComparison.Ordinal) => ForFolder(tag["folder:".Length..]),
@@ -101,6 +103,7 @@ public sealed record NavLocation(PageKind Kind, string Title, string Glyph, stri
         PageKind.Games => "games",
         PageKind.AiCenter => "ai",
         PageKind.Torrents => "torrents",
+        PageKind.Organizer => "organize",
         PageKind.RecycleBin => "recycle",
         PageKind.Settings => "settings",
         _ when Path is not null && Path.StartsWith(@"\\", StringComparison.Ordinal) => "network",

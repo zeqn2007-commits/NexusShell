@@ -1,0 +1,243 @@
+<Page
+    x:Class="Nexus.App.Views.OrganizerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:Nexus.App.Models"
+    xmlns:ui="using:Nexus.App.Converters"
+    Background="Transparent">
+
+    <Page.Resources>
+        <Style x:Key="StatValueStyle" TargetType="TextBlock" BasedOn="{StaticResource TitleTextBlockStyle}" />
+        <Style x:Key="IconTileStyle" TargetType="Border">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="{ThemeResource NxAccentSoftBrush}" />
+        </Style>
+        <Style x:Key="EmptyTextStyle" TargetType="TextBlock" BasedOn="{StaticResource NxBodySecondaryTextStyle}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            MaxWidth="1480"
+            Padding="{StaticResource NxPagePadding}"
+            Spacing="28">
+
+            <Grid>
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource NxPageTitleStyle}" Text="Разбор «Загрузок»" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Nexus только предлагает: ничего не меняется без вашего нажатия, и всё можно отменить" />
+                </StackPanel>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ProgressRing
+                        Width="20"
+                        Height="20"
+                        IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                    <Button AutomationProperties.Name="Открыть «Загрузки»" Click="OpenDownloads_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE838;" />
+                            <TextBlock Text="Открыть «Загрузки»" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        AutomationProperties.Name="Разложить по папкам"
+                        Click="SortAll_Click"
+                        IsEnabled="{x:Bind ViewModel.HasCategories, Mode=OneWay}"
+                        Style="{StaticResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE8F1;" />
+                            <TextBlock Text="Разложить по папкам" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!--  Summary  -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE896;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.FilesCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.FilesCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE74D;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.CleanupCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.CleanupCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource NxCardStyle}">
+                    <StackPanel Spacing="10">
+                        <Border HorizontalAlignment="Left" Style="{StaticResource IconTileStyle}">
+                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE8F1;" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource StatValueStyle}" Text="{x:Bind ViewModel.SortCount, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="{x:Bind ViewModel.SortCaption, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock
+                Style="{StaticResource EmptyTextStyle}"
+                Text="В «Загрузках» сейчас нет файлов. Недокачанные и только что скачанные файлы Nexus не трогает."
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsEmpty), Mode=OneWay}" />
+
+            <!--  What can go  -->
+            <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasCleanup), Mode=OneWay}">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Можно удалить" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Файлы уходят в Корзину, их можно вернуть кнопкой «Отменить» или из Корзины" />
+                </StackPanel>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.CleanupGroups, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="12" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:CleanupGroup">
+                            <Border Padding="0" Style="{StaticResource NxCardStyle}">
+                                <StackPanel>
+                                    <Grid Padding="16,12" ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Style="{StaticResource IconTileStyle}">
+                                            <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="{x:Bind Glyph}" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                                            <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Caption}" />
+                                        </StackPanel>
+                                        <Button
+                                            AutomationProperties.Name="{x:Bind DeleteAllText}"
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Click="DeleteGroup_Click"
+                                            Tag="{x:Bind}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                                <TextBlock Text="{x:Bind DeleteAllText}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                    <ItemsRepeater ItemsSource="{x:Bind Items}">
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="models:CleanupItem">
+                                                <Grid
+                                                    MinHeight="52"
+                                                    Padding="72,8,16,8"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="0,1,0,0"
+                                                    ColumnSpacing="16">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock
+                                                            Style="{StaticResource NxItemTitleTextStyle}"
+                                                            Text="{x:Bind Name}"
+                                                            ToolTipService.ToolTip="{x:Bind Path}" />
+                                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Details}" />
+                                                    </StackPanel>
+                                                    <Button
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Click="DeleteItem_Click"
+                                                        Content="Удалить"
+                                                        Tag="{x:Bind}" />
+                                                    <Button
+                                                        Grid.Column="2"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.Name="Показать в папке"
+                                                        Click="ShowCleanupItem_Click"
+                                                        Style="{StaticResource NxSubtleButtonStyle}"
+                                                        Tag="{x:Bind}"
+                                                        ToolTipService.ToolTip="Показать в папке">
+                                                        <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <!--  Sorting  -->
+            <StackPanel Spacing="12" Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasCategories), Mode=OneWay}">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource NxSectionHeaderStyle}" Text="Разложить по папкам" />
+                    <TextBlock Style="{StaticResource NxBodySecondaryTextStyle}" Text="Папки создаются прямо в «Загрузках»; AI-центр и поиск находят файлы и там" />
+                </StackPanel>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:CategoryGroup">
+                            <Border Padding="16,10" Style="{StaticResource NxCardStyle}">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource IconTileStyle}">
+                                        <FontIcon Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="{x:Bind Glyph}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                                        <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind Caption}" />
+                                        <TextBlock
+                                            Style="{StaticResource NxSecondaryTextStyle}"
+                                            Text="{x:Bind Preview}"
+                                            ToolTipService.ToolTip="{x:Bind Preview}" />
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Click="SortGroup_Click"
+                                        Content="Переложить"
+                                        Tag="{x:Bind}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock
+                    Style="{StaticResource EmptyTextStyle}"
+                    Text="{x:Bind ViewModel.OthersText, Mode=OneWay}"
+                    Visibility="{x:Bind ui:Ui.Visible(ViewModel.HasOthers), Mode=OneWay}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

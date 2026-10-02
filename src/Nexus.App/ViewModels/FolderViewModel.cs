@@ -108,6 +108,9 @@ public sealed partial class FolderViewModel : ObservableObject, IDisposable
 
     public bool ShowsLocations => IsSearchResults || Location.Kind is PageKind.Recent or PageKind.Favorites;
 
+    /// <summary>Downloads gets the "Разобрать" button that opens the organizer.</summary>
+    public bool IsDownloads => IsPhysicalFolder && PathHelper.AreEqual(Location.Path!, KnownFolders.GetPath(KnownFolder.Downloads));
+
     public string ThirdColumnHeader => ShowsLocations ? "Расположение" : "Тип";
 
     public SortField SortField => _settings.Current.SortField;
@@ -132,6 +135,7 @@ public sealed partial class FolderViewModel : ObservableObject, IDisposable
         IsSearchResults = false;
         _filter = string.Empty;
         OnPropertyChanged(nameof(IsPhysicalFolder));
+        OnPropertyChanged(nameof(IsDownloads));
         OnPropertyChanged(nameof(ShowsLocations));
         OnPropertyChanged(nameof(ThirdColumnHeader));
         ConfigureWatcher();

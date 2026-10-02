@@ -877,6 +877,8 @@ public sealed partial class FolderPage : Page, IShellPage, INotifyPropertyChange
 
     private void CopyPath_Click(object sender, RoutedEventArgs e) => ViewModel.CopyPath();
 
+    private void Organize_Click(object sender, RoutedEventArgs e) => _shell.Navigate(NavLocation.FromTag("organize"));
+
     private void Delete_Click(object sender, RoutedEventArgs e) => _ = ViewModel.DeleteAsync(permanently: false);
 
     private void Open_Click(object sender, RoutedEventArgs e) => _ = ViewModel.OpenAsync();

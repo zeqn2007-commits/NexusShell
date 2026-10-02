@@ -359,7 +359,7 @@
                                 Style="{StaticResource NxBodySecondaryTextStyle}"
                                 Text="Папки с играми без лаунчера: портативные версии и свои установки"
                                 TextWrapping="Wrap" />
-                            <Button Grid.Column="1" Click="AddGameFolder_Click">
+                            <Button AutomationProperties.Name="Добавить папку" Grid.Column="1" Click="AddGameFolder_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="14" Glyph="&#xE710;" />
                                     <TextBlock Text="Добавить папку" />
@@ -426,7 +426,7 @@
                                 Style="{StaticResource NxBodySecondaryTextStyle}"
                                 Text="Где ещё искать AI-проекты, скиллы и модели"
                                 TextWrapping="Wrap" />
-                            <Button Grid.Column="1" Click="AddAiFolder_Click">
+                            <Button AutomationProperties.Name="Добавить папку" Grid.Column="1" Click="AddAiFolder_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="14" Glyph="&#xE710;" />
                                     <TextBlock Text="Добавить папку" />

@@ -46,6 +46,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Spacing="2">
                 <Button
@@ -228,8 +229,24 @@
                 </Button>
             </StackPanel>
 
-            <ToggleButton
+            <Button
                 Grid.Column="1"
+                Margin="0,0,4,0"
+                AutomationProperties.Name="Разобрать «Загрузки»"
+                Click="Organize_Click"
+                Style="{StaticResource NxCommandTextButtonStyle}"
+                ToolTipService.ToolTip="Что можно удалить и как разложить скачанное по папкам"
+                Visibility="{x:Bind ui:Ui.Visible(ViewModel.IsDownloads), Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE8F1;" />
+                    <TextBlock Text="Разобрать" />
+                </StackPanel>
+            </Button>
+            <ToggleButton
+                Grid.Column="2"
                 Height="36"
                 Padding="10,0"
                 VerticalAlignment="Center"
@@ -283,25 +300,25 @@
                         <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="110" />
                     </Grid.ColumnDefinitions>
-                    <Button Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Name">
+                    <Button AutomationProperties.Name="Имя" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Name">
                         <StackPanel Margin="20,0,0,0" Orientation="Horizontal" Spacing="6">
                             <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Имя" />
                             <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 0), Mode=OneWay}" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="1" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Modified">
+                    <Button AutomationProperties.Name="Дата изменения" Grid.Column="1" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Modified">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Дата изменения" />
                             <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 1), Mode=OneWay}" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="2" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Type">
+                    <Button AutomationProperties.Name="{x:Bind ViewModel.ThirdColumnHeader, Mode=OneWay}" Grid.Column="2" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Type">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="{x:Bind ViewModel.ThirdColumnHeader, Mode=OneWay}" />
                             <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 2), Mode=OneWay}" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="3" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Size">
+                    <Button AutomationProperties.Name="Размер" Grid.Column="3" Click="ColumnHeader_Click" Style="{StaticResource NxColumnHeaderButtonStyle}" Tag="Size">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Style="{StaticResource NxSecondaryTextStyle}" Text="Размер" />
                             <FontIcon FontSize="9" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind SortGlyph(ViewModel.SortField, ViewModel.SortDescending, 3), Mode=OneWay}" />
